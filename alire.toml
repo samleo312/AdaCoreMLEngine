@@ -1,0 +1,7 @@
+name = "mlengine"
+description = "Shiny new project"
+version = "0.1.0-dev"
+
+authors = ["Samuel Leonetti"]
+maintainers = ["Samuel Leonetti <samleo312@gmail.com>"]
+maintainers-logins = ["samleo312"]
