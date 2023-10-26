@@ -125,7 +125,35 @@ package body Mlengine.Operators is
    begin
     --array multiplication
    end Backward;
-    
+
+-- SoftMaxLoss struct
+type SoftMaxLoss is record
+   Type_ : Unbounded_String := "normalization";
+   Target: Unbounded_String := "target";  -- Placeholder for target
+end record;
+
+-- Constructor of SoftMaxLoss
+function init_SoftMaxLoss return SoftMaxLoss is 
+   begin 
+      return (Type_ => "activation");
+end init_SoftMaxLoss;
+
+function Forward (Layer: in out SoftMaxLoss; X : Float_Array; Target : Unbounded_String) is
+begin
+   Unnormalized_proba : Float := (0.0); -- insert: np.exp(x-np.max(x,axis=1,keepdims=True))
+   Probability : Float := (Unnormalized_proba/ 1.0); -- insert: unnormalized_proba/np.sum(unnormalized_proba,axis=1,keepdims=True)
+   Target : Unbounded_String := Target; -- self.target = target
+   Loss : Float_Array(1..1) := (0.0);  -- insert: -np.log(self.proba[range(len(target)),target])
+   return Loss.mean;    -- return loss.mean()
+end Forward;
+
+function Backward is 
+begin 
+   Gradient : Float := Probability; -- 
+   -- gradient[range(len(self.target)),self.target]-=1.0
+   -- gradient/=len(self.target)
+   return Gradient;
+end Backward
 
     
 end Mlengine.Operators;
