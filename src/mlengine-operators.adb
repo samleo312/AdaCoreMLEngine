@@ -1,51 +1,131 @@
 with Ada.Strings.Unbounded;
 use Ada.Strings.Unbounded;
 
-------------------------------------------------------------------------------------------------------------------------------------------
-    -- QUESTIONS:
-    -- In Python example, class 'Function' inherits 'object' not sure if that gives it behavior that will need to be replicated or not.
+with orka_numerics;
+use orka_numerics;
 
-    -- How exactly do private class variables work? 
-    -- It appears as things are defined as being private at the package level, so how can you have more than one class
-    -- in a package and each of them have their own private variables?
--------------------------------------------------------------------------------------------------------------------------------------------
 
 package body Mlengine.Operators is
+
+----------------------------------------------------------------------------
+--class  Function(object):
+--    def forward(self): 
+--        raise NotImplementedError
+    
+--    def backward(self): 
+--        raise NotImplementedError
+    
+--    def getParams(self): 
+--        return []
 
     type Func is abstract tagged record
     end record;
 
-    function Forward (Self : in Func) return Integer is abstract;                               -- PLACEHOLDER: CHANGE TO RETURN ARRAY OF TENSORS WHEN PROPER LIBRARY IS IMPORTED
-    function Backward (Self : in Func) return Integer is abstract;                              -- PLACEHOLDER: CHANGE TO RETURN ARRAY OF TENSORS WHEN PROPER LIBRARY IS IMPORTED
-    function GetParams (Self: in Func) return parameterList is abstract;                        -- PLACEHOLDER: CHANGE TO RETURN ARRAY OF TENSORS WHEN PROPER LIBRARY IS IMPORTED
+    type Index is range 1 .. 10;
+    type ParameterList is array(Index) of Unbounded_String;
+
+    function Forward (Self : in Func) return CPU_Tensor is abstract;                               
+    function Backward (Self : in Func) return CPU_Tensor is abstract;                             
+    function GetParams (Self: in Func) return ParameterList is abstract;                        
+----------------------------------------------------------------------------    
     
-    
-    
+----------------------------------------------------------------------------
+--class Linear(Function):
+--    def __init__(self,in_nodes,out_nodes):
+--        self.weights = Tensor((in_nodes,out_nodes))
+--        self.bias    = Tensor((1,out_nodes))
+--        self.type = 'linear'
+
+--    def forward(self,x):
+--        output = np.dot(x,self.weights.data)+self.bias.data
+--        self.input = x 
+--        return output
+
+--    def backward(self,d_y):
+--        self.weights.grad += np.dot(self.input.T,d_y)
+--        self.bias.grad    += np.sum(d_y,axis=0,keepdims=True)
+--        grad_input         = np.dot(d_y,self.weights.data.T)
+--        return grad_input
+
+--    def getParams(self):
+--        return [self.weights,self.bias]    
+
     type Linear is new Func with record
-        weights : Integer;                                                                      -- PLACEHOLDER: CHANGE TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
-        bias : Integer;                                                                         -- PLACEHOLDER: CHANGE TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
-        layerType : Unbounded_String := "linear";
-        input : Integer;                                                                        -- PLACEHOLDER: CHANGE TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
+        weights : CPU_Tensor;                                                                      
+        bias : CPU_Tensor;                                                                         
+        layerType : Unbounded_String := "linear";                                                                  
     end record;
 
-   
-    overriding
-    function Forward (Self: in Linear; Output: out Integer) is                                  -- PLACEHOLDER: CHANGE 'Output' TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
+    function Forward (Self: in Linear; X : in CPU_Tensor; Output: out CPU_Tensor) is                                 
     begin
-        NULL; 
+        Output := (Self.weights * X) + Self.bias;
+        return Output;
     end;
 
-    overriding
-    function Backward (Self: in Linear; GradInput: out Integer) is                              -- PLACEHOLDER: CHANGE 'GradInput' TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
+    function Backward (Self: in Linear; GradInput: out CPU_Tensor) is                              
     begin
         NULL; 
     end;
     
-    overriding
-    function GetParams(Self: in Linear; ParameterList: out Integer) is                          -- PLACEHOLDER: CHANGE 'ParameterList' TO ARRAY OF TENSORS WHEN PROPER LIBRARY IS IMPORTED
+    function GetParams(Self: in Linear; ParameterList: out ParameterList) is                          
     begin
         NULL;
     end;
+----------------------------------------------------------------------------
+
+--ReLU struct with type, inplace boolean, and activated array
+    type ReLU is record
+     Type_ : Unbounded_String := "activation";
+     Inplace : Boolean;
+     Activated : Float_Array;
+    end record;
 
 
+    --constructor of ReLU
+   function init_ReLU return ReLU
+    is
+    begin
+        return (Type_ => "activation", Inplace => True, Activated => null);
+    end init_ReLU;
+
+
+    --forward function, takes in "self" params, call as Layer.Inplace? or can pass in Layer.Inplace?
+    --x is the input array
+    --do we even need activated??
+    --which are in/in out/out
+    function Forward (Layer: in out ReLU; X : Float_Array; Inplace : Boolean; Activated : Float_Array)
+    is
+    begin
+    --if inplace: change input array directly, set all vals less than 0 to 0
+    --if inplace is true
+        for I of X loop
+            if I < 0.0 then
+                I := 0.0; --http://www.ada-auth.org/standards/12rat/html/Rat12-6-3.html
+            end if;
+        end loop;
+        --updated array to become Layers's activation array
+        Layer.Activated := X;
+
+    
+    --if not in place: create new array where negative values are again set to 0
+    --else
+   --end if;
+
+    --########################################################################################################
+   --i decided that we dont need in place right now, maybe later for optimization, not necessary to engine behaviour
+   --##########################################################################################################
+
+    --in out so no return
+   --return Layer.Activated;
+   end Forward;
+
+
+   function Backward (Layer:ReLU; D_Y : in Float_Array)
+   is
+   begin
+    --array multiplication
+   end Backward;
+    
+
+    
 end Mlengine.Operators;
