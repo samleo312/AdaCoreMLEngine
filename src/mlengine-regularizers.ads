@@ -1,3 +1,3 @@
 package Mlengine.Regularizers is
-    private
+   pragma Elaborate_Body;
 end Mlengine.Regularizers;

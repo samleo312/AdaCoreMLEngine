@@ -1,3 +1,3 @@
 package Mlengine.Optimizers is
-    private
+   pragma Elaborate_Body;
 end Mlengine.Optimizers;
