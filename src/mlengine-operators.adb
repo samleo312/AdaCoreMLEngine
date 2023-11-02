@@ -45,55 +45,34 @@ package body Mlengine.Operators is
 
 
     type ReLU is record
-     Type_ : Unbounded_String := "activation";
-     Inplace : Boolean;
-     Activated : Float_Array;
+       Type_ : Unbounded_String := To_Unbounded_String("activation");
+       Inplace : Boolean := True;
+       Activated : Float_Array := (others => 0.0);
     end record;
 
 
-    --constructor of ReLU
-   function init_ReLU return ReLU
-    is
-    begin
-        return (Type_ => "activation", Inplace => True, Activated => null);
-    end init_ReLU;
+
+    function Forward(Layer: in out ReLU; X: in out Float_Array) return Float_Array is
+   Activated : Float_Array;
+begin
+   Activated := X;
+   for I in X'Range loop
+      if X(I) < 0.0 then
+         Activated(I) := 0.0;
+      end if;
+   end loop;
+   Layer.Activated := Activated;
+   return Activated;
+end Forward;
 
 
-    --forward function, takes in "self" params, call as Layer.Inplace? or can pass in Layer.Inplace?
-    --x is the input array
-    --do we even need activated??
-    --which are in/in out/out
-    function Forward (Layer: in out ReLU; X : Float_Array; Inplace : Boolean; Activated : Float_Array)
-    is
-    begin
-    --if inplace: change input array directly, set all vals less than 0 to 0
-    --if inplace is true
-        for I of X loop
-            if I < 0.0 then
-                I := 0.0; --http://www.ada-auth.org/standards/12rat/html/Rat12-6-3.html
-            end if;
-        end loop;
-        --updated array to become Layers's activation array
-        Layer.Activated := X;
-
-    
-    --if not in place: create new array where negative values are again set to 0
-    --else
-   --end if;
-
-    --########################################################################################################
-   --i decided that we dont need in place right now, maybe later for optimization, not necessary to engine behaviour
-   --##########################################################################################################
-
-    --in out so no return
-   --return Layer.Activated;
-   end Forward;
-
-
-   function Backward (Layer:ReLU; D_Y : in Float_Array)
-   is
-   begin
-    --array multiplication
-   end Backward;
-
-end Mlengine.Operators;
+   function Backward(Layer: in out ReLU; D_Y: in Float_Array) return Float_Array is
+   gradient_input: Float_Array := (others => 0.0);
+begin
+   for I in D_Y'Range loop
+      if Layer.Activated(I) > 0.0 then
+         gradient_input(I) := D_Y(I);
+      end if;
+   end loop;
+   return gradient_input;
+end Backward;
