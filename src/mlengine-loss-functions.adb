@@ -32,6 +32,11 @@ package body Mlengine.LossFunctions is
         for F in X'range loop
             X(F) := Unnormalized_prob(X(F), MaxVal);
         end loop;
+
+        -- Add print statements for testing
+        for F in X'range loop 
+            Ada.Text_IO.Put_Line("X(" & F'Image &") = " & X(F)'Image);
+        end loop;
     end;
 
     function Forward (Layer: in out SoftMaxLoss; X : Float_Array; Target : Unbounded_String) is
@@ -40,7 +45,8 @@ package body Mlengine.LossFunctions is
         Target : Unbounded_String := Target; -- self.target = target
         Loss : Float_Array(1..1) := (0.0);  -- insert: -np.log(self.proba[range(len(target)),target])
     begin
-    Unnormalized_probs(X); -- insert: np.exp(x-np.max(x,axis=1,keepdims=True))
+        Unnormalized_probs(X); -- insert: np.exp(x-np.max(x,axis=1,keepdims=True))
+        Ada.Text_IO.Put_Line("Loss: " & Loss(1)'Image); -- Print the value of Loss
     
     return Loss.mean;    -- return loss.mean()
     end Forward;
@@ -50,6 +56,7 @@ package body Mlengine.LossFunctions is
     begin  
         -- gradient[range(len(self.target)),self.target]-=1.0
         -- gradient/=len(self.target)
+        Ada.Text_IO.Put_Line("Gradient: " & Gradient'Image); -- Print the value of Gradient
     return Gradient;
     end Backward;
 
