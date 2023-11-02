@@ -7,3 +7,5 @@ maintainers = ["Samuel Leonetti <samleo312@gmail.com>"]
 maintainers-logins = ["samleo312"]
 [[depends-on]]
 orka_numerics = "^1.0.0"
+[[depends-on]]
+orka_tensors_cpu = "^1.0.0"
