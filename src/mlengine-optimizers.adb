@@ -1,14 +1,18 @@
 ---------------------
 -      Questions    -
 ---------------------
+how to handle array of unknown size?
 where does    "type Index is range 1 .. X;" go?
+unit tests?
+
+
 
 
 
 package body Mlengine.Optimizers is
 
 type SGD is tagged record
-    lr, weight_decay, momentum : double;
+    lr, weight_decay, momentum : Float;
     -- parameters : Float_Array (array of parameters for optimizer)
     -- velocity : Float_Array (array same size as "parameters" list but all values are 0)
 end record;
@@ -29,10 +33,10 @@ end record;
 
     end
 
-    
+
     procedure zeroGrad(Float_Array: in out parameters)
     begin
-    -- must traverse array
+    -- must traverse array and set all values to 0
     end
 end Mlengine.Optimizers;
 
