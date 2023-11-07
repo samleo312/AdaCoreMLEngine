@@ -8,3 +8,6 @@ maintainers-logins = ["samleo312"]
 
 [[depends-on]]
 orka_tensors_cpu = "~1.0.0"
+
+[build-switches]
+"*".style_checks = "No"
