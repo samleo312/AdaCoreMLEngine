@@ -5,6 +5,6 @@ version = "0.1.0-dev"
 authors = ["Samuel Leonetti"]
 maintainers = ["Samuel Leonetti <samleo312@gmail.com>"]
 maintainers-logins = ["samleo312"]
-
+executables = ["mlengine_demo"]
 [[depends-on]]
 orka_tensors_cpu = "~1.0.0"
