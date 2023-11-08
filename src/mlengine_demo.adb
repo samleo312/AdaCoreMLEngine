@@ -14,7 +14,7 @@ begin
    --call forward func
    Mlengine.Operators.Forward(MyReLU,InputArray);
 
-   -- Display the Activated array from the ReLU struct to verify the function's behavior
+   --display activated array to test behaviour
    Ada.Text_IO.Put_Line("Activated Array:");
    for I in MyReLU.Activated'Range loop
       Ada.Text_IO.Put(Float'Image (MyReLU.Activated(I)));

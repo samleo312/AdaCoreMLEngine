@@ -4,18 +4,20 @@ use Ada.Strings.Unbounded;
 
 package body Mlengine.Operators is
    
-
-   procedure Forward(Layer: in out ReLU; X: Float_Array) is
-      --Activated : Float_Array;
-   begin
-      --Activated := X;
-      for I in X'Range loop
-         if X(I) < 0.0 then
-            Layer.Activated(I) := 0.0;
-         end if;
-      end loop;
-      --Layer.Activated := Activated;
+   --forward procedure
+   procedure Forward(Layer: in out ReLU; X: in out Float_Array) is
+      begin
+         --iterate thru input array
+         for I in X'Range loop
+            --if num is negative, set to 0
+            if X(I) < 0.0 then
+               X(I) := 0.0;
+            end if;
+         end loop;
+      Layer.Activated := X;
    end Forward;
+
+   --TODO: Backward
 
    --  function Backward(Layer: in out ReLU; D_Y: in Float_Array) return Float_Array is
    --     gradient_input: Float_Array := (others => 0.0);
