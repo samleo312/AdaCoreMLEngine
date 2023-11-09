@@ -8,7 +8,7 @@ project Mlengine is
    for Exec_Dir use "bin/";
 
    package Compiler is
-      for Default_Switches ("Ada") use Mlengine_Config.Ada_Compiler_Switches;
+      for Default_Switches ("Ada") use Mlengine_Config.Ada_Compiler_Switches & ("-gnat2022");
    end Compiler;
 
    package Binder is
