@@ -2,10 +2,13 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 with Orka.Numerics.Singles.Tensors.CPU;
 use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.CPU;
+use Orka.Numerics.Singles.Tensors.CPU;
 
 package body Mlengine.Operators is
 
    overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
+      Output : ST_CPU.CPU_Tensor := Add((E.Weights.Data.all * X.Data.all), E.Bias.Data.all);
       Output : ST_CPU.CPU_Tensor := Add((E.Weights.Data.all * X.Data.all), E.Bias.Data.all);
    begin
       E.Input := X; 

@@ -25,6 +25,7 @@ package body Mlengine.Utilities is
             L : aliased Mlengine.Operators.Linear_T := (LWeights, LBias, LInput);
             Tensor : ST_CPU.CPU_Tensor := L.Backward(Tensor1);
         begin
+            Put_Line(LWeights.Data.Image);
             Put_Line(Tensor.Image);
         end;
     end;
