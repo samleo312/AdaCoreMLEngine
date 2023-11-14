@@ -9,22 +9,23 @@ package body Mlengine.Utilities is
 
         Tensor1 : Tensor;
     begin  
-        LWeights.Data := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros((2,2)));
-        LWeights.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros((2,2)));
+        LWeights.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+        LWeights.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
-        LBias.Data := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros((2,2)));
-        LBias.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros((2,2)));
+        LBias.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+        LBias.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
-        LInput.Data := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros((2,2)));
-        LInput.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros((2,2)));
+        LInput.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+        LInput.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
-        Tensor1.Data := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros((2,2)));
-        Tensor1.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros((2,2)));
+        Tensor1.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+        Tensor1.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
         declare
             L : aliased Mlengine.Operators.Linear_T := (LWeights, LBias, LInput);
             Tensor : ST_CPU.CPU_Tensor := L.Forward(Tensor1);
         begin
+            Put_Line(LWeights.Data.Image);
             Put_Line(Tensor.Image);
         end;
     end;
