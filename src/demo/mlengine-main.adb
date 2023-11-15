@@ -1,6 +1,7 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Mlengine.Operators;
-with Orka;
+with Orka; --for Float32 type
+use Orka; --for operator
 with Orka.Numerics;
 --with alire.cache.dependencies.orka_b455160b.orka_types.src.orka.ads;
 
@@ -8,6 +9,7 @@ with Orka.Numerics;
 procedure Mlengine.Main is
    Input : Tensor;
    Element1 : Orka.Float_32;
+   Zero : Orka.Float_32 := 0.0;
    -- Declare a 2D tensor of size 3 by 4
 begin
    Input.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
@@ -19,6 +21,10 @@ begin
    --Put_Line((Input.Data.Get((1,1))));
    Element1 := (Input.Data((1,1)));
    Put_Line(Element1'Image);
+
+   if Element1 < 5.0 then
+      Ada.Text_IO.Put_Line("horsey");
+   end if;
 
    --Put_Line((Input.Data.Get((1, 1))));
 
