@@ -18,4 +18,11 @@ package Mlengine.Operators is
    overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor;
    --overriding function Get_Params (E : Linear_T) return ST_CPU.CPU_Tensor;
 
+   type ReLU_T is new Func_T with record
+      Activated : Tensor;
+   end record;
+
+   overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_CPU.CPU_Tensor;
+   overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_CPU.CPU_Tensor;
+
 end Mlengine.Operators;
