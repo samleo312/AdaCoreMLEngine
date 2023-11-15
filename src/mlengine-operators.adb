@@ -58,12 +58,32 @@ package body Mlengine.Operators is
 
       end;
 
-      --place holder still needs implemented
+
       overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
-      todo : Tensor;
-   begin
-      todo.data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
-      return todo.data.all;
+      --current var
+      cur : Orka.Float_32;
+      begin
+      --for i in tensors rows
+         for I in 1..(E.Activated.Data.Shape(1)) loop
+            --for j in tensors columns
+            for J in 1..(E.Activated.Data.Shape(2)) loop
+               Put_Line("ran");
+               --set cur to dY[i,j]
+               cur := (E.Activated.Data((I,J)));
+               --return dY * 1.0 or 0.0
+               --these are True and False values of if activated is greater than 0
+               if cur < 0.0 then
+                  dY.Grad.Set (((I,J)), 0.0);
+                  Put_Line("ranny");
+               end if;
+
+            end loop;
+            
+         end loop;
+
+
+         --return modified dy gradient tensor
+         return dY.Grad.All;
    end;
 
 end Mlengine.Operators;
