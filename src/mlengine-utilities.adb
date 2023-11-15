@@ -28,13 +28,13 @@ package body Mlengine.Utilities is
         Tensor1.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
         --relu's activation tensor
-        R_Activated.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -2.0, 3.0, -4.0), (2, 2)));
-        R_Activated.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+        R_Activated.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
+        R_Activated.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
 
         --relu test input data
         R_Test_Input.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -2.0, 3.0, -4.0), (2, 2)));
-        R_Test_Input.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
-
+        R_Test_Input.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -2.0, 3.0, -4.0), (2, 2)));
+        
 
 
         declare
