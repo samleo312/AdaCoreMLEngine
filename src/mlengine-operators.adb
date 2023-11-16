@@ -1,82 +1,95 @@
-with Ada.Strings.Unbounded;
-use Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Text_IO; use Ada.Text_IO;
+with Orka; --for Float32 type
+use Orka; --for operator
+with Orka.Numerics.Singles.Tensors.CPU;
+use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.CPU;
+use Orka.Numerics.Singles.Tensors.CPU;
 
 package body Mlengine.Operators is
 
-    type Func is abstract tagged record
-    end record;
+   overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
+      Output : ST_CPU.CPU_Tensor := Add((E.Weights.Data.all * X.Data.all), E.Bias.Data.all);
+   begin
+      E.Input := X; 
+      return Output;
+   end;
 
-    type Index is range 1 .. 10;
-    type ParameterList is array(Index) of Unbounded_String;
-    
-    function Forward (Self : in Func) return Grad_Tensor is abstract;                               
-    function Backward (Self : in Func) return Grad_Tensor is abstract;                             
-    function GetParams (Self: in Func) return ParameterList is abstract;                        
+   overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
+      GradInput : ST_CPU.CPU_Tensor := (dY.Data.all * Transpose(E.Weights.Data.all));
+   begin
+      E.Weights.Grad := new ST_CPU.CPU_Tensor'(Add(E.Weights.Grad.all, (Transpose(E.Input.Data.all) * dY.Data.all)));
+      return GradInput;
+   end;
 
-    type Linear is new Func with record
-        weights : Grad_Tensor;                                                                      
-        bias : Grad_Tensor;                                                                         
-        layerType : Unbounded_String := "linear";   
-        input : Grad_Tensor;                                                               
-    end record;
+   overriding function Get_Params (E : Linear_T) return ParamsArray is
+      Parameters : ParamsArray; 
+   begin
+      Parameters(1) := E.Weights;
+      Parameters(2) := E.Bias;
+      return Parameters;
+   end;
+   --overriding function Get_Params (E : Linear_T) return ST_CPU.CPU_Tensor is
+   --   Tensor : ST_CPU.CPU_Tensor := ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0, 5.0, 6.0), Shape => (3, 2));
+   --begin
+   --   Put_Line (E'Image);
+   --   return Tensor;
+   --end;
 
-    function Forward (Self: in Linear; X : in Grad_Tensor; Output: out Grad_Tensor) is                                 
-    begin
-        Output.Tensor := (Self.weights.Tensor * X.Tensor) + Self.bias.Tensor;
-        Self.input := X; 
-        return Output;
-    end;
+   overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_CPU.CPU_Tensor is
+      --current var
+      cur : Orka.Float_32;
+      begin
+         --for i in tensors rows
+         for I in 1..(X.Data.Shape(1)) loop
+            --for j in tensors columns
+            for J in 1..(X.Data.Shape(2)) loop
+               --set cur to input[i,j]
+               cur := (X.Data((I,J)));
+               --check if negative, if so set to 0.0
+               if cur < 0.0 then
+                  X.Data.Set (((I,J)), 0.0);
+               end if;
 
-    function Backward (Self: in out Linear; dY: out Grad_Tensor) is    
-    GradInput : Grad_Tensor;                           
-    begin
-        Self.weights.Gradient := Self.weights.Gradient + (Self.input.Tensor.Transpose * dY.Tensor);
-        Self.bias.Gradient := Self.bias.Gradient + 0; -- NOT FINISHED, 0 IS PLACEHOLDER
-        GradInput.Tensor := Self.weights.Tensor.Transpose * dY.Tensor;
+            end loop;
+            
+         end loop;
 
-        return GradInput;
-    end;
-    
-    function GetParams(Self: in Linear; ParameterList: out ParameterList) is                          
-    begin
-        NULL;
-    end;
+         --set ReLU activated in place to modified x
+         E.Activated := X;
 
+         --return something even tho we do inplace
+         return E.activated.data.all;
 
-
-
-
-
-
-    type ReLU is record
-       Type_ : Unbounded_String := To_Unbounded_String("activation");
-       Inplace : Boolean := True;
-       Activated : Float_Array := (others => 0.0);
-    end record;
-
-
-
-    function Forward(Layer: in out ReLU; X: in out Float_Array) return Float_Array is
-   Activated : Float_Array;
-begin
-   Activated := X;
-   for I in X'Range loop
-      if X(I) < 0.0 then
-         Activated(I) := 0.0;
-      end if;
-   end loop;
-   Layer.Activated := Activated;
-   return Activated;
-end Forward;
+      end;
 
 
-   function Backward(Layer: in out ReLU; D_Y: in Float_Array) return Float_Array is
-   gradient_input: Float_Array := (others => 0.0);
-begin
-   for I in D_Y'Range loop
-      if Layer.Activated(I) > 0.0 then
-         gradient_input(I) := D_Y(I);
-      end if;
-   end loop;
-   return gradient_input;
-end Backward;
+      overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
+      --current var
+      cur : Orka.Float_32;
+      begin
+      --for i in tensors rows
+         for I in 1..(E.Activated.Data.Shape(1)) loop
+            --for j in tensors columns
+            for J in 1..(E.Activated.Data.Shape(2)) loop
+               Put_Line("ran");
+               --set cur to dY[i,j]
+               cur := (E.Activated.Data((I,J)));
+               --return dY * 1.0 or 0.0
+               --these are True and False values of if activated is greater than 0
+               if cur < 0.0 then
+                  dY.Grad.Set (((I,J)), 0.0);
+                  Put_Line("ranny");
+               end if;
+
+            end loop;
+            
+         end loop;
+
+
+         --return modified dy gradient tensor
+         return dY.Grad.All;
+   end;
+
+end Mlengine.Operators;
