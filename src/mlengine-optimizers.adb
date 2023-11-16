@@ -1,20 +1,24 @@
 ---------------------
 -      Questions    -
 ---------------------
-how to handle array of unknown size?
-where does    "type Index is range 1 .. X;" go?
-unit tests?
-
-
-
+--unit tests?
+--create Parameter_Array?
 
 
 package body Mlengine.Optimizers is
 
+-- define Stochastic Gradient Descent
+-- lr: learning rate of the engine
+-- weight_decay:
+-- momentum: 
+-- parametersGrad: array of gradients for optimizer (Float_Array)
+-- parametersData: array of data for optimizer (Float_Array)
+-- velocity: array storing the changes in parameters, all values begin as 0 (Float_Array)
 type SGD is tagged record
     lr, weight_decay, momentum : Float;
-    -- parameters : Float_Array (array of parameters for optimizer)
-    -- velocity : Float_Array (array same size as "parameters" list but all values are 0)
+    parametersGrad : Float_Array
+    parametersData : Float_Array
+    velocity : Float_Array
 end record;
 
    -- procedure with no parameters
@@ -22,22 +26,25 @@ end record;
     -- loops though instance variables "parameters" and "velocity"
     -- assigns new value to velocity
     -- assigns new value to parameters.data
-    procedure step (Float_Array: in out parameters, Float_Array: in out velocity)
+    procedure step (Float_Array: in out parametersGrad, Float_Array: in out parametersData, Float_Array: in out velocity)
     is
     begin
-    -- cannot determine logic until parameters and velocity are concrete
-    -- pseudo logic is as follows
-    -- for i = 0, i < velocity.length(), i++
-        -- velocity[i] = momentum * velocity[i] + parameters.grad + weight_decay * parameters.data
-        -- parameters.data = parameters.data - lr * velocity[i]
-
+        for i in velocity'Range loop
+            velocity(i) := momentum * velocity(i) + parametersGrad(i) + weight * parametersData(i);
+            parametersData(i) := parametersData - lr * velocities(i);
+        end loop
     end
 
 
-    procedure zeroGrad(Float_Array: in out parameters)
+--procedure to reset all parameter values to 0
+    procedure zero_grad(Float_Array: in out parametersGrad, Float_Array: in out parametersData)
     begin
-    -- must traverse array and set all values to 0
-    end
+        for i in parametersData'Range loop
+            parametersData(i) := 0.0;
+            parametersGrad(i) := 0.0;
+        end loop;
+    end zero_grad
+
 end Mlengine.Optimizers;
 
 
