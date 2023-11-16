@@ -4,44 +4,34 @@
 --unit tests?
 --create Parameter_Array?
 
+with Orka; --for Float32 type
+use Orka; --for operator
+with Orka.Numerics.Singles.Tensors.CPU;
+use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.CPU;
+use Orka.Numerics.Singles.Tensors.CPU;
 
 package body Mlengine.Optimizers is
 
--- define Stochastic Gradient Descent
--- lr: learning rate of the engine
--- weight_decay:
--- momentum: 
--- parametersGrad: array of gradients for optimizer (Float_Array)
--- parametersData: array of data for optimizer (Float_Array)
--- velocity: array storing the changes in parameters, all values begin as 0 (Float_Array)
-type SGD is tagged record
-    lr, weight_decay, momentum : Float;
-    parametersGrad : Float_Array
-    parametersData : Float_Array
-    velocity : Float_Array
-end record;
-
-   -- procedure with no parameters
-    -- all calculations done with instance variables
+    -- procedure with no input
     -- loops though instance variables "parameters" and "velocity"
     -- assigns new value to velocity
-    -- assigns new value to parameters.data
-    procedure step (Float_Array: in out parametersGrad, Float_Array: in out parametersData, Float_Array: in out velocity)
+    -- assigns new value to parameters(1) (data)
+    procedure step (parameters: in out Tensor, velocity: in out Float_Array)
     is
     begin
         for i in velocity'Range loop
-            velocity(i) := momentum * velocity(i) + parametersGrad(i) + weight * parametersData(i);
-            parametersData(i) := parametersData - lr * velocities(i);
+            velocity(i) := momentum * velocity(i) + parameters(2)(i) + weight_decay * parameters(1)(i);
+            parameters(1)(i) := parameters(1)(i) - lr * velocity(i);
         end loop
     end
 
 
---procedure to reset all parameter values to 0
+--procedure to reset all parameter gradient values to 0
     procedure zero_grad(Float_Array: in out parametersGrad, Float_Array: in out parametersData)
     begin
-        for i in parametersData'Range loop
-            parametersData(i) := 0.0;
-            parametersGrad(i) := 0.0;
+        for i in parameters(2)'Range loop
+            parameters(2)(i) := 0;
         end loop;
     end zero_grad
 
