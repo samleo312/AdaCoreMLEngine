@@ -1,5 +1,7 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
+with Orka; --for Float32 type
+use Orka; --for operator
 with Orka.Numerics.Singles.Tensors.CPU;
 use Orka.Numerics.Singles.Tensors.CPU;
 with Orka.Numerics.Singles.Tensors.CPU;
@@ -28,4 +30,66 @@ package body Mlengine.Operators is
       Parameters(2) := E.Bias;
       return Parameters;
    end;
+   --overriding function Get_Params (E : Linear_T) return ST_CPU.CPU_Tensor is
+   --   Tensor : ST_CPU.CPU_Tensor := ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0, 5.0, 6.0), Shape => (3, 2));
+   --begin
+   --   Put_Line (E'Image);
+   --   return Tensor;
+   --end;
+
+   overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_CPU.CPU_Tensor is
+      --current var
+      cur : Orka.Float_32;
+      begin
+         --for i in tensors rows
+         for I in 1..(X.Data.Shape(1)) loop
+            --for j in tensors columns
+            for J in 1..(X.Data.Shape(2)) loop
+               --set cur to input[i,j]
+               cur := (X.Data((I,J)));
+               --check if negative, if so set to 0.0
+               if cur < 0.0 then
+                  X.Data.Set (((I,J)), 0.0);
+               end if;
+
+            end loop;
+            
+         end loop;
+
+         --set ReLU activated in place to modified x
+         E.Activated := X;
+
+         --return something even tho we do inplace
+         return E.activated.data.all;
+
+      end;
+
+
+      overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
+      --current var
+      cur : Orka.Float_32;
+      begin
+      --for i in tensors rows
+         for I in 1..(E.Activated.Data.Shape(1)) loop
+            --for j in tensors columns
+            for J in 1..(E.Activated.Data.Shape(2)) loop
+               Put_Line("ran");
+               --set cur to dY[i,j]
+               cur := (E.Activated.Data((I,J)));
+               --return dY * 1.0 or 0.0
+               --these are True and False values of if activated is greater than 0
+               if cur < 0.0 then
+                  dY.Grad.Set (((I,J)), 0.0);
+                  Put_Line("ranny");
+               end if;
+
+            end loop;
+            
+         end loop;
+
+
+         --return modified dy gradient tensor
+         return dY.Grad.All;
+   end;
+
 end Mlengine.Operators;
