@@ -30,12 +30,7 @@ package body Mlengine.Operators is
       Parameters(2) := E.Bias;
       return Parameters;
    end;
-   --overriding function Get_Params (E : Linear_T) return ST_CPU.CPU_Tensor is
-   --   Tensor : ST_CPU.CPU_Tensor := ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0, 5.0, 6.0), Shape => (3, 2));
-   --begin
-   --   Put_Line (E'Image);
-   --   return Tensor;
-   --end;
+   
 
    overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_CPU.CPU_Tensor is
       --current var
@@ -90,6 +85,15 @@ package body Mlengine.Operators is
 
          --return modified dy gradient tensor
          return dY.Grad.All;
-   end;
+      
+      
+      end;
+
+      overriding function Get_Params (E : ReLU_T) return ParamsArray is
+         BlankArray : ParamsArray;
+      begin
+         return BlankArray;
+      end; 
+
 
 end Mlengine.Operators;
