@@ -1,3 +1,3 @@
 package Mlengine.Initializers is
-    private
+    pragma Elaborate_Body;
 end Mlengine.Initializers;

@@ -27,10 +27,14 @@ package body Mlengine.Operators is
         return Output;
     end;
 
-    function Backward (Self: in Linear; dY: out Grad_Tensor) is                              
+    function Backward (Self: in out Linear; dY: out Grad_Tensor) is    
+    GradInput : Grad_Tensor;                           
     begin
         Self.weights.Gradient := Self.weights.Gradient + (Self.input.Tensor.Transpose * dY.Tensor);
-        Self.bias.Gradient := Self.bias.Gradient + 
+        Self.bias.Gradient := Self.bias.Gradient + 0; -- NOT FINISHED, 0 IS PLACEHOLDER
+        GradInput.Tensor := Self.weights.Tensor.Transpose * dY.Tensor;
+
+        return GradInput;
     end;
     
     function GetParams(Self: in Linear; ParameterList: out ParameterList) is                          
