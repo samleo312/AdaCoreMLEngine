@@ -27,6 +27,7 @@ package body Mlengine.Utilities is
             Params : Mlengine.Operators.ParamsArray := L.Get_Params; 
         begin
             Put_Line(Params(1).Data.Image);
+            Put_Line(L.Bias.Grad.Image);
             Put_Line(Tensor.Image);
         end;
     end;
