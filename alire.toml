@@ -10,3 +10,6 @@ executables = ["mlengine-main"]
 orka_numerics = "^1.0.0"
 [[depends-on]]
 orka_tensors_cpu = "^1.0.0"
+
+[build-switches]
+"*".style_checks = "No"
