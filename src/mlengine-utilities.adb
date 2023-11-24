@@ -1,5 +1,6 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Mlengine.Operators;
+with Linear_Tests; use Linear_Tests;
 with Orka;
 use Orka;
 
@@ -11,10 +12,6 @@ package body Mlengine.Utilities is
 
         Tensor1 : Tensor;
 
-        --ReLU vars
-        R_Activated : Tensor;
-        R_Test_Input : Tensor;
-        R_dY : Tensor;
     begin  
         LWeights.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
         LWeights.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
@@ -28,44 +25,21 @@ package body Mlengine.Utilities is
         Tensor1.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
         Tensor1.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
-        --relu's activation tensor
-        R_Activated.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
-        R_Activated.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
-
-        --relu test input data
-        R_Test_Input.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -2.0, 3.0, -4.0), (2, 2)));
-        R_Test_Input.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -2.0, 3.0, -4.0), (2, 2)));
-
-        --relu's dY tensor
-        R_dY.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
-        R_dY.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -2.0, 3.0, -4.0), (2, 2)));
-        
-
-
+    
         declare
-            --ReLU object
-            R : aliased Mlengine.Operators.ReLU_T := (Activated => R_Activated);
-            --relu tensor to print and show output
-            R_Tensor : ST_CPU.CPU_Tensor := R.Forward(R_Test_Input);
-
-            --relu tensor to print and show backward output
-            R_Tensor_2 : ST_CPU.CPU_Tensor := R.Backward(R_dY);
-
-
             L : aliased Mlengine.Operators.Linear_T := (LWeights, LBias, LInput);
             Tensor : ST_CPU.CPU_Tensor := L.Backward(Tensor1);
             Params : Mlengine.Operators.ParamsArray := L.Get_Params; 
+            Test : Linear_Test;
         begin
-            Put_Line(Params(1).Data.Image);
-            Put_Line(L.Bias.Grad.Image);
-            Put_Line(Tensor.Image);
-
-            --print returned dY grad (works but at this pt ReLU already changed)
-            Put_Line(R_Tensor_2.Image);
-            --done in place
-            Put_Line(R.Activated.Data.Image);
-
-            
+            --Put_Line(Params(1).Data.Image);
+            --Put_Line(L.Bias.Grad.Image);
+            --Put_Line(Tensor.Image);
+            Put_Line("Running Tests");
+            Test_Forward(Test);
+            Test_Backward(Test);
+            Test_GetParams(Test);
+            Put_Line("Tests Complete");
         end;
     end;
 end Mlengine.Utilities;

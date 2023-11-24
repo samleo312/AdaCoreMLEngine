@@ -12,3 +12,5 @@ orka_tensors_cpu = "~1.0.0"
 
 [build-switches]
 "*".style_checks = "No"
+[[depends-on]]
+aunit = "^23.0.0"
