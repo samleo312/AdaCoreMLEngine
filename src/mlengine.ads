@@ -13,10 +13,10 @@ package Mlengine is
         Grad : Tensor_Access;
     end record;
 
-    type Elements_Access is access ST.Element_Array;
+    type Elements_Access is access all ST.Element_Array;
 
     subtype ET is ST.Element;
 
-    Values : constant ST.Element_Array := (1.0, 2.0, 3.0, 4.0, 5.0);
+    --  Values : constant ST.Element_Array := (1.0, 2.0, 3.0, 4.0, 5.0);
 
 end Mlengine;

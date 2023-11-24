@@ -17,12 +17,12 @@ package Mlengine.Optimizers is
     -- lr: learning rate of the engine (default = 0.01)
     -- weight_decay:
     -- momentum: float in range [0, 1], fraction of the previous update to add to the current update (default = 0). 
-    -- grad, data: tensor of data and associated gradients
-    -- velocity: array storing the changes in params, all values begin as 0 (Float_Array)
+    -- t: tensor of data and associated gradients
+    -- velocities: array storing the changes in params, all values begin as 0 (Float_Array)
     type SGD is new Opt with record
         lr, weight_decay, momentum : Float;
         t : Tensor;
-        velocity : Elements_Access;
+        velocities : Elements_Access;
     end record; 
 
     overriding procedure step (params : in out SGD);
