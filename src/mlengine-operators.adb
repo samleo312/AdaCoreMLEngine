@@ -1,57 +1,99 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-
-------------------------------------------------------------------------------------------------------------------------------------------
--- QUESTIONS:
--- In Python example, class 'Function' inherits 'object' not sure if that gives it behavior that will need to be replicated or not.
-
--- How exactly do private class variables work?
--- It appears as things are defined as being private at the package level, so how can you have more than one class
--- in a package and each of them have their own private variables?
--------------------------------------------------------------------------------------------------------------------------------------------
+with Ada.Text_IO; use Ada.Text_IO;
+with Orka; --for Float32 type
+use Orka; --for operator
+with Orka.Numerics.Singles.Tensors.CPU;
+use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.CPU;
+use Orka.Numerics.Singles.Tensors.CPU;
 
 package body Mlengine.Operators is
 
-   type Func is abstract tagged record
-      Dummy_To_Compile : Boolean;
-   end record;
-
-   type ParameterList is
-     array
-       (Positive range <>) of Integer;                                  -- PLACEHOLDER: CHANGE TO ARRAY OF TENSORS WHEN PROPER LIBRARY IS IMPORTED
-
-   function Forward
-     (Self : in Func)
-      return Integer is abstract;                               -- PLACEHOLDER: CHANGE TO RETURN ARRAY OF TENSORS WHEN PROPER LIBRARY IS IMPORTED
-   function Backward
-     (Self : in Func)
-      return Integer is abstract;                              -- PLACEHOLDER: CHANGE TO RETURN ARRAY OF TENSORS WHEN PROPER LIBRARY IS IMPORTED
-   function GetParams
-     (Self : in Func)
-      return ParameterList is abstract;                        -- PLACEHOLDER: CHANGE TO RETURN ARRAY OF TENSORS WHEN PROPER LIBRARY IS IMPORTED
-
-   type Layer_T is (Linear, Undefined);
-   type Linear_func is new Func with record
-      weights : Integer;                                                                      -- PLACEHOLDER: CHANGE TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
-      bias : Integer;                                                                         -- PLACEHOLDER: CHANGE TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
-      layer   : Layer_T := Linear;
-      input : Integer;                                                                        -- PLACEHOLDER: CHANGE TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
-   end record;
-
-   procedure Forward (Self : in Linear_func; Output : out Integer) is                           -- PLACEHOLDER: CHANGE 'Output' TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
+   overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
+      Output : ST_CPU.CPU_Tensor := Add((E.Weights.Data.all * X.Data.all), E.Bias.Data.all);
    begin
-      null;
-   end Forward;
+      E.Input := X; 
+      return Output;
+   end;
 
-   procedure Backward (Self : in Linear_func; GradInput : out Integer)
-   is                              -- PLACEHOLDER: CHANGE 'GradInput' TO TENSOR WHEN PROPER LIBRARY IS IMPORTED
+   overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
+      GradInput : ST_CPU.CPU_Tensor := (dY.Data.all * Transpose(E.Weights.Data.all));
    begin
-      null;
-   end Backward;
+      E.Weights.Grad := new ST_CPU.CPU_Tensor'(Add(E.Weights.Grad.all, (Transpose(E.Input.Data.all) * dY.Data.all)));
+      return GradInput;
+   end;
 
-   procedure GetParams (Self : in Linear_func; ParameterList : out Integer)
-   is                          -- PLACEHOLDER: CHANGE 'ParameterList' TO ARRAY OF TENSORS WHEN PROPER LIBRARY IS IMPORTED
+   overriding function Get_Params (E : Linear_T) return ParamsArray is
+      Parameters : ParamsArray; 
    begin
-      null;
-   end GetParams;
+      Parameters(1) := E.Weights;
+      Parameters(2) := E.Bias;
+      return Parameters;
+   end;
+   
+
+   overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_CPU.CPU_Tensor is
+      --current var
+      cur : Orka.Float_32;
+      begin
+         --for i in tensors rows
+         for I in 1..(X.Data.Shape(1)) loop
+            --for j in tensors columns
+            for J in 1..(X.Data.Shape(2)) loop
+               --set cur to input[i,j]
+               cur := (X.Data((I,J)));
+               --check if negative, if so set to 0.0
+               if cur < 0.0 then
+                  X.Data.Set (((I,J)), 0.0);
+               end if;
+
+            end loop;
+            
+         end loop;
+
+         --set ReLU activated in place to modified x
+         E.Activated := X;
+
+         --return something even tho we do inplace
+         return E.activated.data.all;
+
+      end;
+
+
+      overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
+      --current var
+      cur : Orka.Float_32;
+      begin
+      --for i in tensors rows
+         for I in 1..(E.Activated.Data.Shape(1)) loop
+            --for j in tensors columns
+            for J in 1..(E.Activated.Data.Shape(2)) loop
+               Put_Line("ran");
+               --set cur to dY[i,j]
+               cur := (E.Activated.Data((I,J)));
+               --return dY * 1.0 or 0.0
+               --these are True and False values of if activated is greater than 0
+               if cur < 0.0 then
+                  dY.Grad.Set (((I,J)), 0.0);
+                  Put_Line("ranny");
+               end if;
+
+            end loop;
+            
+         end loop;
+
+
+         --return modified dy gradient tensor
+         return dY.Grad.All;
+      
+      
+      end;
+
+      overriding function Get_Params (E : ReLU_T) return ParamsArray is
+         BlankArray : ParamsArray;
+      begin
+         return BlankArray;
+      end; 
+
 
 end Mlengine.Operators;
