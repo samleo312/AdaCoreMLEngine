@@ -17,6 +17,4 @@ package Mlengine is
 
     subtype ET is ST.Element;
 
-    --  Values : constant ST.Element_Array := (1.0, 2.0, 3.0, 4.0, 5.0);
-
 end Mlengine;
