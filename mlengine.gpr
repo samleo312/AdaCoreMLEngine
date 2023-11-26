@@ -4,7 +4,11 @@ project Mlengine is
    for Source_Dirs use ("src/", "src/demo", "config/");
    for Object_Dir use "obj/" & Mlengine_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
+<<<<<<< HEAD
    for Main use ("src/mlengine_demo.adb");
+=======
+   for Main use ("src/demo/mlengine-main.adb");
+>>>>>>> 857de48588ce63b536e72782ac2999febf9102af
    for Exec_Dir use "bin/";
 
    package Compiler is

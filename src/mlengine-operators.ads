@@ -1,18 +1,34 @@
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Strings.Unbounded;
-use Ada.Strings.Unbounded;
+with Mlengine;
+
 package Mlengine.Operators is
-   
-   --relu declared
-   type ReLU is record
-      FuncType : Unbounded_String := To_Unbounded_String("activation");
-      Inplace : Boolean := True;
-      --Activated : Float_Array := (others => 0.0);
-      Activated : Float_Array(1..5) := (0.0, 0.0, 0.0, 0.0, 0.0);
+   type Func_T is interface;
+   type Func_Access_T is access all Func_T'Class;
+
+   type Index is range 1 .. 2;
+   type ParamsArray is array(Index) of Tensor;
+
+   function Forward (E : in out Func_T; X : in Tensor) return ST_CPU.CPU_Tensor is abstract;
+   function Backward (E : in out Func_T; dY : in Tensor) return ST_CPU.CPU_Tensor is abstract;
+   function Get_Params (E : Func_T) return ParamsArray is abstract;
+
+   type Linear_T is new Func_T with record
+      Weights : Tensor;
+      Bias : Tensor;
+      Input : Tensor;
    end record;
 
-   --forward procedure
-   procedure Forward(Layer : in out ReLU; X : in out Float_Array);
    
    
+   overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor;
+   overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor;
+   overriding function Get_Params (E : Linear_T) return ParamsArray;
+
+   type ReLU_T is new Func_T with record
+      Activated : Tensor;
+   end record;
+
+   overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_CPU.CPU_Tensor;
+   overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_CPU.CPU_Tensor;
+   overriding function Get_Params (E : ReLU_T) return ParamsArray;
+
 end Mlengine.Operators;

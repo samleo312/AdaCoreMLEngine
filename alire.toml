@@ -5,6 +5,12 @@ version = "0.1.0-dev"
 authors = ["Samuel Leonetti"]
 maintainers = ["Samuel Leonetti <samleo312@gmail.com>"]
 maintainers-logins = ["samleo312"]
+<<<<<<< HEAD
 executables = ["mlengine_demo"]
+=======
+executables = ["mlengine-main"]
+>>>>>>> 857de48588ce63b536e72782ac2999febf9102af
 [[depends-on]]
-orka_tensors_cpu = "~1.0.0"
+orka_numerics = "^1.0.0"
+[[depends-on]]
+orka_tensors_cpu = "^1.0.0"
