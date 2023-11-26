@@ -55,7 +55,6 @@ package body Mlengine.Utilities is
         Slr := 0.001;
         Sweight_decay := 0.01;
         Smomentum := 0.9;
-        --  Svelocities := ST.Element_Array(1.0, 2.0, 3.0, 4.0);
 
         --SGD's tensor
         Sten.data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor((0.0, 1.0, 2.0, 3.0), (4,1)));
