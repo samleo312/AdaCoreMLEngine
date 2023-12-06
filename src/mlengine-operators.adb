@@ -17,27 +17,29 @@ package body Mlengine.Operators is
    begin
       for I in 1 .. (T.Shape(1)) loop
          Counter := 0.0;
-         for J in 1 .. (T.Shape(2)) loop
-            Counter := Counter + ST_CPU.Get(T, (I, J));
-         end loop;   
-         declare 
-            Single : ST_CPU.CPU_Tensor := ST_CPU.Zeros((1,1));
-         begin 
-            Single.Set (((1,1)), Counter);
-            if I = 1 then
-               ST_CPU.Set(Result, (1,1), Counter);
-            else
-               Result := Result & Single;
-            end if; 
-            
-         end;
+         if T.Shape'Length > 1 then
+            for J in 1 .. (T.Shape(2)) loop
+               Counter := Counter + ST_CPU.Get(T, (I, J));
+            end loop;   
+            declare 
+               Single : ST_CPU.CPU_Tensor := ST_CPU.Zeros((1,1));
+            begin 
+               Single.Set (((1,1)), Counter);
+               if I = 1 then
+                  ST_CPU.Set(Result, (1,1), Counter);
+               else
+                  Result := Result & Single;
+               end if; 
+               
+            end;
+         end if;
          
       end loop;
       return Result; 
    end;
 
    overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
-      Output : ST_CPU.CPU_Tensor := Add((E.Weights.Data.all * X.Data.all), E.Bias.Data.all);
+      Output : ST_CPU.CPU_Tensor := Add((X.Data.all * E.Weights.Data.all), E.Bias.Data.all);
    begin
       E.Input := X; 
       return Output;
@@ -46,7 +48,7 @@ package body Mlengine.Operators is
    overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
       GradInput : ST_CPU.CPU_Tensor := (dY.Data.all * Transpose(E.Weights.Data.all));
    begin
-      E.Weights.Grad := new ST_CPU.CPU_Tensor'(Add(E.Weights.Grad.all, (Transpose(E.Input.Data.all) * dY.Data.all)));
+      E.Weights.Grad := new ST_CPU.CPU_Tensor'(Add(E.Weights.Grad.all, (dY.Data.all * Transpose(E.Input.Data.all))));
       E.Bias.Grad := new ST_CPU.CPU_Tensor'(SumOverX(dY.Data.all));
       return GradInput;
    end;
