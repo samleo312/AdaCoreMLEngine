@@ -4,7 +4,7 @@ with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 with Mlengine; use Mlengine;
 with Orka; use Orka;
 
-package body Mlengine.relutest is
+package body Relu_Tests is
 
    procedure Test_Forward (T : in out Test_Cases.Test_Case'Class) is
        --ReLU vars
@@ -69,4 +69,4 @@ package body Mlengine.relutest is
       return Format ("ReLU Tests");
    end Name;
 
-end Mlengine.relutest;
+end Relu_Tests;
