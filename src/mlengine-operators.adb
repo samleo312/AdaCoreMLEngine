@@ -98,21 +98,20 @@ package body Mlengine.Operators is
          for I in 1..(E.Activated.Data.Shape(1)) loop
             --for j in tensors columns
             for J in 1..(E.Activated.Data.Shape(2)) loop
-               Put_Line("ran");
                --set cur to dY[i,j]
                cur := (E.Activated.Data((I,J)));
                --return dY * 1.0 or 0.0
                --these are True and False values of if activated is greater than 0
-               if cur < 0.0 then
+               if cur <= 0.0 then
+                  Put_Line("fixed");
                   dY.Grad.Set (((I,J)), 0.0);
-                  Put_Line("ranny");
                end if;
 
             end loop;
             
          end loop;
 
-
+         Put_Line(dy.Grad.Image);
          --return modified dy gradient tensor
          return dY.Grad.All;
       

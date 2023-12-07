@@ -6,7 +6,7 @@ with Orka; use Orka;
 
 package body Relu_Tests is
 
-   procedure Test_Forward (T : in out Test_Cases.Test_Case'Class) is
+   procedure Test_Forward_R (T : in out Test_Cases.Test_Case'Class) is
        --ReLU vars
         R_Activated : Tensor;
         R_Test_Input : Tensor;
@@ -15,7 +15,7 @@ package body Relu_Tests is
       R_Activated.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
 
       R_Test_Input.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -3.0, 4.0, -5.0), (2, 2)));
-      R_Test_Input.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -3.0, 4.0, -5.0)), (2, 2));
+      R_Test_Input.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -3.0, 4.0, -5.0), (2, 2)));
 
       declare
          --ReLU object
@@ -25,12 +25,12 @@ package body Relu_Tests is
         --result
         Result : ST_CPU.CPU_Tensor := R.Forward(R_Test_Input);
       begin
-         Assert (Result = Answer, "Forward Function is incorrect");
+         Assert (R.Activated.Data.all = Answer, "Forward Function is incorrect");
       end;
       
-   end Test_Forward;
+   end Test_Forward_R;
 
-   procedure Test_Backward (T : in out Test_Cases.Test_Case'Class) is
+   procedure Test_Backward_R (T : in out Test_Cases.Test_Case'Class) is
       --ReLU vars
         R_Activated : Tensor;
         R_dY : Tensor;
@@ -39,7 +39,7 @@ package body Relu_Tests is
       R_Activated.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
 
       R_dY.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -3.0, 4.0, -5.0), (2, 2)));
-      R_dY.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -3.0, 4.0, -5.0)), (2, 2));
+      R_dY.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -3.0, 4.0, -5.0), (2, 2)));
 
       declare
          L : aliased Mlengine.Operators.ReLU_T := (Activated => R_Activated);
@@ -49,7 +49,7 @@ package body Relu_Tests is
          Assert (Result = Answer, "Backward Function is incorrect");
       end;
       
-   end Test_Backward;
+   end Test_Backward_R;
 
 
    -- Register test routines to call
@@ -57,8 +57,8 @@ package body Relu_Tests is
       use AUnit.Test_Cases.Registration;
    begin
       -- Repeat for each test routine:
-      Register_Routine (T, Test_Forward'Access, "Test Forward");
-      Register_Routine (T, Test_Backward'Access, "Test Backward");
+      Register_Routine (T, Test_Forward_R'Access, "Test Forward");
+      Register_Routine (T, Test_Backward_R'Access, "Test Backward");
 
    end Register_Tests;
 
