@@ -35,11 +35,11 @@ package body Relu_Tests is
         R_Activated : Tensor;
         R_dY : Tensor;
    begin
-      R_Activated.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
-      R_Activated.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
+      R_Activated.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 0.0, 4.0, 0.0), (2, 2)));
+      R_Activated.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 0.0, 4.0, 0.0), (2, 2)));
 
-      R_dY.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -3.0, 4.0, -5.0), (2, 2)));
-      R_dY.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -3.0, 4.0, -5.0), (2, 2)));
+      R_dY.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 3.0, 4.0, 5.0), (2, 2)));
+      R_dY.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 3.0, 4.0, 5.0), (2, 2)));
 
       declare
          L : aliased Mlengine.Operators.ReLU_T := (Activated => R_Activated);
