@@ -8,7 +8,7 @@ package body Linear_Forward_Test is
     function Name (T : Linear_Forward_Test) return AUnit.Message_String is
         pragma Unreferenced (T);
     begin
-        return AUnit.Format ("Test Linear Backward Function");
+        return AUnit.Format ("Test Linear Forward Function");
     end Name;
 
     procedure Run_Test (T : in out Linear_Forward_Test) is
