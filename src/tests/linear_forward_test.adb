@@ -40,3 +40,25 @@ package body Linear_Forward_Test is
    end Run_Test;
 
 end Linear_Forward_Test;
+
+--procedure Test_GetParams (T : in out Test_Cases.Test_Case'Class) is
+--      TestWeights : Tensor;
+--      TestBias : Tensor;
+--      TestInput : Tensor;
+--   begin
+--      TestWeights.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+--      TestWeights.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+--
+--      TestBias.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+--      TestBias.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+--
+--      TestInput.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+--      TestInput.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2))); 
+--
+--      declare
+--         L : aliased Mlengine.Operators.Linear_T := (TestWeights, TestBias, TestInput);
+--      begin
+--         Assert (1 = 1, "Get_Params Function is incorrect");
+--      end;
+--      
+--   end Test_GetParams;
