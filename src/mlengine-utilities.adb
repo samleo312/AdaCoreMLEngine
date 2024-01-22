@@ -11,6 +11,17 @@ package body Mlengine.Utilities is
         M.Graph.Append(Layer);
     end;
 
+    procedure InitializeNetwork(M : Model) is
+    begin
+        for F of M.Graph loop
+            if F.layerType = "linear" then -- Need to add 'layerType' string to all component classes
+                F.Weights := F.Get_Params;
+                
+                F.Bias.Data := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros ((1.0, 2.0, 3.0, 4.0), (2, 2))); -- Change to all zeros
+            end if;
+        end loop; 
+    end;
+
     function Fit(M: in out Model; Data : Tensor; Target : Tensor; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftmaxWithLoss) is
     begin
     end;

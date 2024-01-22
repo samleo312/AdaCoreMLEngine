@@ -14,11 +14,13 @@ package Mlengine.Utilities is
    use Layer_Vector;
 
    type Model is record
-      Graph : Vector;
+      Graph : Layer_Vector.Vector;
    end record;
 
    procedure Add(M : in out Model; Layer: Func_Access_T);
+   procedure InitializeNetwork(M : Model);
    function Fit(M: in out Model; Data : Tensor; Target : Tensor; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftmaxWithLoss);
    function Predict(M : in out Model; Data : Tensor);
+   
 
 end Mlengine.Utilities;
