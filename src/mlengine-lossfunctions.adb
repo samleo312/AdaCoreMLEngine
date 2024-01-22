@@ -1,63 +1,37 @@
+with Ada.Numerics; use Ada.Numerics;
+with Ada.Numerics.Elementary_Functions;
+use  Ada.Numerics.Elementary_Functions;
+
 package body Mlengine.LossFunctions is
 
-    -- SoftMaxLoss struct
-    type SoftMaxLoss is record
-        Type_ : Unbounded_String := "normalization";
-        Target: Unbounded_String := "target";  -- Placeholder for target
-    end record;
+   -- forward function calculates the Softmax Loss
+   function Forward(X: Float_Array; Target: Float_Array) return Float is
+      -- declaring variables
+      Max_Value : Float := X(1);
+      Prob_Sum : Float := 0.0;
+      Exp_Sum : Float := 0.0;
+      Loss : Float;
 
-    -- Constructor of SoftMaxLoss
-    function init_SoftMaxLoss return SoftMaxLoss is 
-    begin 
-        return (Type_ => "normalization");
-    end init_SoftMaxLoss;
+   begin
+      --find max value in X
+      for I in X'Range loop
+         --if num is negative, set to 0
+         if X(I) > Max_Value then
+            Max_Value := X(I);
+         end if;
+      end loop;
+      -- calculate the exponential of each element in X while summing up the exponentials 
+      for J in X'Range loop
+         Exp_Sum := Exp_Sum + Exp(X(J) - Max_Value);
+      end loop;
 
-    function Unnormalized_prob (X : Float; MaxX: Float ) return Float is 
-        (Exp(X - MaxX));
-
-    function FindMax(X: Float_Array) return Float is 
-    MaxValue: Float := 0.0;
-    begin   
-        for F of X loop
-            if F > MaxValue then
-                MaxValue := F;
-            end if;
-        end loop;
-        return MaxValue;
-    end;
-
-    procedure Unnormalized_probs(X: in out Float_Array) is
-    MaxVal: Float := FindMax(X);
-    begin 
-        for F in X'range loop
-            X(F) := Unnormalized_prob(X(F), MaxVal);
-        end loop;
-
-        -- Add print statements for testing
-        for F in X'range loop 
-            Ada.Text_IO.Put_Line("X(" & F'Image &") = " & X(F)'Image);
-        end loop;
-    end;
-
-    function Forward (Layer: in out SoftMaxLoss; X : Float_Array; Target : Unbounded_String) is
-        -- Unnormalized_proba : Float := (Unnormalized_prob()); -- insert: np.exp(x-np.max(x,axis=1,keepdims=True))
-        Probability : Float := (Unnormalized_proba/ 1.0); -- insert: unnormalized_proba/np.sum(unnormalized_proba,axis=1,keepdims=True)
-        Target : Unbounded_String := Target; -- self.target = target
-        Loss : Float_Array(1..1) := (0.0);  -- insert: -np.log(self.proba[range(len(target)),target])
-    begin
-        Unnormalized_probs(X); -- insert: np.exp(x-np.max(x,axis=1,keepdims=True))
-        Ada.Text_IO.Put_Line("Loss: " & Loss(1)'Image); -- Print the value of Loss
-    
-    return Loss.mean;    -- return loss.mean()
-    end Forward;
-
-    function Backward is 
-    Gradient : Float := Probability; --
-    begin  
-        -- gradient[range(len(self.target)),self.target]-=1.0
-        -- gradient/=len(self.target)
-        Ada.Text_IO.Put_Line("Gradient: " & Gradient'Image); -- Print the value of Gradient
-    return Gradient;
-    end Backward;
-
+      -- calculate the probability and the loss
+      for K in X'Range loop
+         Prob_Sum := Prob_Sum + Exp(X(K) - Max_Value);   -- unnormalized_proba = np.exp(x-np.max(x,axis=1,keepdims=True)), 
+         if X(K) = Target(K) then
+            Loss := -Log(Exp(X(K) - Max_Value) / Exp_Sum);  -- loss = -np.log(self.proba[range(len(target)),target])
+         end if;
+      end loop; 
+      return Loss;
+   end Forward;
 end Mlengine.LossFunctions;
