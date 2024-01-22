@@ -8,7 +8,7 @@ package Mlengine.Optimizers is
 
     -- procedure to adjust values of parameters and velocities for an adjustment towards optimal solution
     ----------------procedure step (parametersGrad: in out Float_Array, parametersData in out Float_Array, velocity: in out Float_Array);
-    procedure step (parameters: in out Tensor, velocity: in out Float_Array);
+    procedure step (parameters: in out Tensor; velocity: in out Float_Array);
 
     -- procedure to reset parameter Gradients to 0.0
     ---------------procedure zero_grad(parametersGrad: in out Float_Array, Float_ArparametersDataray: in out Float_Array);

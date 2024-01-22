@@ -1,22 +1,24 @@
 with Mlengine.Operators; use Mlengine.Operators;
+with Mlengine.Optimizers; use Mlengine.Optimizers;
+with Mlengine.LossFunctions; use Mlengine.LossFunctions;
 with Ada.Containers;
 with Ada.Containers.Vectors;
 
 package Mlengine.Utilities is
 
-   package Integer_Vectors is new
+   package Layer_Vector is new
      Ada.Containers.Vectors
        (Index_Type   => Natural,
         Element_Type => Func_Access_T);
 
-   use Integer_Vectors;
+   use Layer_Vector;
 
    type Model is record
       Graph : Vector;
    end record;
 
-   procedure Add(M : Model);
-   function Fit(M: Model; Data : Integer; Target : Integer; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : Integer; Loss_Fn : Integer);
-   function Predict(M : Model; Data : Integer);
+   procedure Add(M : in out Model; Layer: Func_Access_T);
+   function Fit(M: in out Model; Data : Tensor; Target : Tensor; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftmaxWithLoss);
+   function Predict(M : in out Model; Data : Tensor);
 
 end Mlengine.Utilities;
