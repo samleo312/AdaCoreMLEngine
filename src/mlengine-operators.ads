@@ -1,4 +1,5 @@
 with Mlengine;
+with Ada.Text_IO;
 
 package Mlengine.Operators is
    type Func_T is interface;
@@ -11,10 +12,13 @@ package Mlengine.Operators is
    function Backward (E : in out Func_T; dY : in Tensor) return ST_CPU.CPU_Tensor is abstract;
    function Get_Params (E : Func_T) return ParamsArray is abstract;
 
+   subtype Layer_Type is String (0 .. 6);
+
    type Linear_T is new Func_T with record
       Weights : Tensor;
       Bias : Tensor;
       Input : Tensor;
+      LayerType : Layer_Type := "linear"; 
    end record;
 
    

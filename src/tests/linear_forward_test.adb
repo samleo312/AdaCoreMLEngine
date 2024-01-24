@@ -30,7 +30,7 @@ package body Linear_Forward_Test is
       InputTensor.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
       declare
-         L : aliased Mlengine.Operators.Linear_T := (TestWeights, TestBias, TestInput);
+         L : aliased Mlengine.Operators.Linear_T := (TestWeights, TestBias, TestInput, "linear");
          Answer : ST_CPU.CPU_Tensor := ST.CPU.To_Tensor((8.0, 12.0, 18.0, 26.0), (2,2));
          Result : ST_CPU.CPU_Tensor := L.Forward(InputTensor);
       begin

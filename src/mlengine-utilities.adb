@@ -14,10 +14,11 @@ package body Mlengine.Utilities is
     procedure InitializeNetwork(M : Model) is
     begin
         for F of M.Graph loop
-            if F.layerType = "linear" then -- Need to add 'layerType' string to all component classes
-                F.Weights := F.Get_Params;
+            if F.LayerType = "linear" then -- Need to add 'layerType' string to all component classes
+                --F.Weights.Data := Random(F.Weights.Data.Shape(1), F.Weights.Data.Shape(2))
+                --Need to find random function.
                 
-                F.Bias.Data := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros ((1.0, 2.0, 3.0, 4.0), (2, 2))); -- Change to all zeros
+                --Bias.Data := also need to set bias to zero.
             end if;
         end loop; 
     end;
