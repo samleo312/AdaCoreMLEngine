@@ -6,6 +6,8 @@ with Linear_Suite;
 with Orka; use Orka;
 
 package body Mlengine.Utilities is
+
+
     procedure Add(M : in out Model; Layer: Func_Access_T) is
     begin
         M.Graph.Append(Layer);
@@ -13,12 +15,13 @@ package body Mlengine.Utilities is
 
     procedure InitializeNetwork(M : Model) is
     begin
-        for F of M.Graph loop
-            if F.LayerType = "linear" then -- Need to add 'layerType' string to all component classes
-                --F.Weights.Data := Random(F.Weights.Data.Shape(1), F.Weights.Data.Shape(2))
-                --Need to find random function.
+        for I in M.Graph.First_Index .. M.Graph.Last_Index loop
+            if M.Graph (I).LayerType = "linear" then -- Need to add 'layerType' string to all component classes
+                -- QUESTION: Why am i required to give LayerType a value on creation if I have a default one defined in the type definition?
+                M.Graph (I).Weights.Data := Random(F.Weights.Data.Shape(1), F.Weights.Data.Shape(2));
                 
-                --Bias.Data := also need to set bias to zero.
+                
+                M.Graph (I).Bias.Data := ST_CPU.Zeros((1,1)); 
             end if;
         end loop; 
     end;

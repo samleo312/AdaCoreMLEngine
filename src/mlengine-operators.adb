@@ -4,10 +4,6 @@ with Orka; --for Float32 type
 use Orka; --for operator
 with Orka.Numerics.Singles.Tensors.CPU;
 use Orka.Numerics.Singles.Tensors.CPU;
-with Orka.Numerics.Singles.Tensors.CPU;
-use Orka.Numerics.Singles.Tensors.CPU;
-with Orka;
-use Orka;
 
 package body Mlengine.Operators is
    
