@@ -4,24 +4,32 @@ with AUnit.Reporter.Text;
 with AUnit.Run;
 with Linear_Suite; 
 with Orka; use Orka;
+with Ada.Numerics.Float_Random; use  Ada.Numerics.Float_Random;
 
 package body Mlengine.Utilities is
-
 
     procedure Add(M : in out Model; Layer: Func_Access_T) is
     begin
         M.Graph.Append(Layer);
     end;
-
-    procedure InitializeNetwork(M : Model) is
+        
+        -- QUESTION: Why am i required to give LayerType a value on creation if I have a default one defined in the type definition?
+        -- QUESTION: undefined selector for overloaded prefix, polymorphism for vector not working
+    procedure InitializeNetwork(M : in out Model) is
+       G : Generator;
     begin
+        Reset (G);
         for I in M.Graph.First_Index .. M.Graph.Last_Index loop
             if M.Graph (I).LayerType = "linear" then -- Need to add 'layerType' string to all component classes
-                -- QUESTION: Why am i required to give LayerType a value on creation if I have a default one defined in the type definition?
-                M.Graph (I).Weights.Data := Random(F.Weights.Data.Shape(1), F.Weights.Data.Shape(2));
                 
-                
-                M.Graph (I).Bias.Data := ST_CPU.Zeros((1,1)); 
+                for J in 1..(M.Graph (I).Data.Shape(1)) loop
+                    for K in 1..(M.Graph (I).Data.Shape(2)) loop
+                        M.Graph (I).Data.Set (((J,K)), Random (G));
+                    end loop;
+            
+                end loop;
+
+                M.Graph (I).Bias.Data := new ST_CPU.CPU_Tensor'(ST_CPU.Zeros((2,1)));
             end if;
         end loop; 
     end;

@@ -18,7 +18,7 @@ package Mlengine.Utilities is
    end record;
 
    procedure Add(M : in out Model; Layer: Func_Access_T);
-   procedure InitializeNetwork(M : Model);
+   procedure InitializeNetwork(M : in out Model);
    function Fit(M: in out Model; Data : Tensor; Target : Tensor; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftmaxWithLoss);
    function Predict(M : in out Model; Data : Tensor);
    
