@@ -31,7 +31,7 @@ package body Linear_Backward_Test is
         InputTensor.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
         declare
-            L : aliased Mlengine.Operators.Linear_T := (TestWeights, TestBias, TestInput, "linear");
+            L : aliased Mlengine.Operators.Linear_T := (TestWeights, TestBias, TestInput);
             Answer : ST_CPU.CPU_Tensor := ST.CPU.To_Tensor((5.0, 11.0, 11.0, 25.0), (2,2));
             Result : ST_CPU.CPU_Tensor := L.Backward(InputTensor);
         begin

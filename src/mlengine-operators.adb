@@ -1,9 +1,7 @@
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
-with Orka; --for Float32 type
-use Orka; --for operator
-with Orka.Numerics.Singles.Tensors.CPU;
-use Orka.Numerics.Singles.Tensors.CPU;
+with Orka; use Orka; 
+with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 
 package body Mlengine.Operators is
    
@@ -34,6 +32,16 @@ package body Mlengine.Operators is
       return Result; 
    end;
 
+   procedure InitializeLayer(E : in out Linear_T) is
+      G : Generator; 
+   begin
+      for J in 1..(E.Weights.Data.Shape(1)) loop
+         for K in 1..(E.Weights.Data.Shape(2)) loop
+            E.Weights.Data.Set (((J,K)), 0.0); -- Change 0.0 to Random(G), will not accept Standard.Float but will accept 0.0?
+         end loop;
+      end loop;
+   end;
+   
    overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
       Output : ST_CPU.CPU_Tensor := Add((X.Data.all * E.Weights.Data.all), E.Bias.Data.all);
    begin
