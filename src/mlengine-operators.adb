@@ -126,5 +126,10 @@ package body Mlengine.Operators is
          return BlankArray;
       end; 
 
+      procedure InitializeLayer(E : in out ReLU_T) is
+      begin
+         null;
+      end;
+
 
 end Mlengine.Operators;

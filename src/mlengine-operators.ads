@@ -12,6 +12,7 @@ package Mlengine.Operators is
    function Forward (E : in out Func_T; X : in Tensor) return ST_CPU.CPU_Tensor is abstract;
    function Backward (E : in out Func_T; dY : in Tensor) return ST_CPU.CPU_Tensor is abstract;
    function Get_Params (E : Func_T) return ParamsArray is abstract;
+   procedure InitializeLayer(E : in out Func_T) is abstract;
    
 
 
@@ -36,5 +37,6 @@ package Mlengine.Operators is
    overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_CPU.CPU_Tensor;
    overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_CPU.CPU_Tensor;
    overriding function Get_Params (E : ReLU_T) return ParamsArray;
+   procedure InitializeLayer(E : in out ReLU_T);
 
 end Mlengine.Operators;

@@ -14,8 +14,10 @@ package body Mlengine.Utilities is
 
     procedure InitializeNetwork(M : in out Model) is
     begin
-        for I in M.Graph.First_Index .. M.Graph.Last_Index loop
-            InitializeLayer(M.Graph (I).all);
+        for G of M.Graph loop
+            G.all.InitializeLayer;
+            -- null;
+            --InitializeLayer(M.Graph (I).all);
         end loop; 
     end;
 
