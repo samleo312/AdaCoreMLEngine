@@ -16,8 +16,6 @@ package body Mlengine.Utilities is
     begin
         for G of M.Graph loop
             G.all.InitializeLayer;
-            -- null;
-            --InitializeLayer(M.Graph (I).all);
         end loop; 
     end;
 
