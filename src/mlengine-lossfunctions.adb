@@ -1,31 +1,32 @@
 with Ada.Numerics;                      use Ada.Numerics;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
-with AUnit.Assertions;                  use AUnit.Assertions;
+--with AUnit.Assertions;                  use AUnit.Assertions;
 with Orka; --for Float32 type
-
 use Orka; --for operator
 with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 
 package body Mlengine.LossFunctions is
-   procedure Forward is
-      -- declaring variables
-      type Test_Array is array (Positive range <>) of Float;
-      X : Test_Array (1 .. 3)       := (2.5, 1.5, 0.7);     -- simulating tensors
-      Targets       : array (1 .. 2) of Natural := (1, 2);  -- target indices
-      MaxValue      : Float := X (1);                       -- max value in array
-      Probabilities : array (1 .. 3) of Float;              -- storing the probabilities
-      Exp_Sum       : Float                     := 0.0;
-      Loss          : Float;
-      Expected_Loss : Float                     := 0.927343;
-
+   function Forward (X : in out ST_CPU.CPU_Tensor; Target : in array (1 .. 20) of Orka.Float_32) return Orka.Float_32 is
+      maximum : Orka.Float_32 := 0.0;
+      array_counter : Integer := 1;
    begin
-      --find max value in X
-      for I in X'Range loop
-         if X (I) > MaxValue then
-            MaxValue := X (I);
-         end if;
-      end loop;
-      Put_Line ("Max Value: " & Float'Image (MaxValue));
+      --find max value of each row and set it to pos in respective target array
+      --for i in tensors rows
+         for I in 1..(X.Shape(1)) loop
+            --for j in tensors columns
+            for J in 1..(X.Shape(2)) loop
+               
+               if (X((I,J))) > maximum then
+                  maximum := (X.Data((I,J)));
+               end if;
+
+            end loop;
+
+            Target(Position) := (X.Data((I,J)));
+            array_counter := array_counter + 1;
+            maximum := 0.0;
+            
+         end loop;
 
       -- calculate unnormalized probabilities and exponential sum
       for J in X'Range loop
@@ -50,7 +51,7 @@ package body Mlengine.LossFunctions is
          Put_Line ("Probability: " & Float'Image (Probabilities (K)));
       end loop;
 
-      Assert (Loss = Expected_Loss, "Loss is incorrect");
+      --Assert (Loss = Expected_Loss, "Loss is incorrect");
 
    end Forward;
 
