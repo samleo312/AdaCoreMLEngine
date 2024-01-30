@@ -1,37 +1,57 @@
-with Ada.Numerics; use Ada.Numerics;
-with Ada.Numerics.Elementary_Functions;
-use  Ada.Numerics.Elementary_Functions;
+with Ada.Numerics;                      use Ada.Numerics;
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+with AUnit.Assertions;                  use AUnit.Assertions;
+with Orka; --for Float32 type
+
+use Orka; --for operator
+with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 
 package body Mlengine.LossFunctions is
-
-   -- forward function calculates the Softmax Loss
-   function Forward(X: Float_Array; Target: Float_Array) return Float is
+   procedure Forward is
       -- declaring variables
-      Max_Value : Float := X(1);
-      Prob_Sum : Float := 0.0;
-      Exp_Sum : Float := 0.0;
-      Loss : Float;
+      type Test_Array is array (Positive range <>) of Float;
+      X : Test_Array (1 .. 3)       := (2.5, 1.5, 0.7);     -- simulating tensors
+      Targets       : array (1 .. 2) of Natural := (1, 2);  -- target indices
+      MaxValue      : Float := X (1);                       -- max value in array
+      Probabilities : array (1 .. 3) of Float;              -- storing the probabilities
+      Exp_Sum       : Float                     := 0.0;
+      Loss          : Float;
+      Expected_Loss : Float                     := 0.927343;
 
    begin
       --find max value in X
       for I in X'Range loop
-         --if num is negative, set to 0
-         if X(I) > Max_Value then
-            Max_Value := X(I);
+         if X (I) > MaxValue then
+            MaxValue := X (I);
          end if;
       end loop;
-      -- calculate the exponential of each element in X while summing up the exponentials 
+      Put_Line ("Max Value: " & Float'Image (MaxValue));
+
+      -- calculate unnormalized probabilities and exponential sum
       for J in X'Range loop
-         Exp_Sum := Exp_Sum + Exp(X(J) - Max_Value);
+         Exp_Sum := Exp_Sum + Exp (X (J) - MaxValue);
       end loop;
 
-      -- calculate the probability and the loss
       for K in X'Range loop
-         Prob_Sum := Prob_Sum + Exp(X(K) - Max_Value);   -- unnormalized_proba = np.exp(x-np.max(x,axis=1,keepdims=True)), 
-         if X(K) = Target(K) then
-            Loss := -Log(Exp(X(K) - Max_Value) / Exp_Sum);  -- loss = -np.log(self.proba[range(len(target)),target])
-         end if;
-      end loop; 
-      return Loss;
+         Probabilities (K) := Exp (X (K) - MaxValue) / Exp_Sum;
+      end loop;
+
+      -- calculate the loss based on the predicted probabilities
+      Loss := 0.0;
+      for k in Targets'Range loop
+         Loss := Loss - Log (Probabilities (Targets (K)));
+      end loop;
+      Loss := Loss / Float (Targets'Length);  -- Average loss over all targets
+
+      Put_Line ("Loss: " & Float'Image (Loss));
+
+      -- display probabilities
+      for K in Probabilities'Range loop
+         Put_Line ("Probability: " & Float'Image (Probabilities (K)));
+      end loop;
+
+      Assert (Loss = Expected_Loss, "Loss is incorrect");
+
    end Forward;
+
 end Mlengine.LossFunctions;
