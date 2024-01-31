@@ -35,11 +35,18 @@ package body Mlengine.Operators is
    procedure InitializeLayer(E : in out Linear_T) is
       G : Generator; 
    begin
+      Put_Line("Weights Before:");
+      Put_Line(E.Weights.Data.Image);
+
       for J in 1..(E.Weights.Data.Shape(1)) loop
          for K in 1..(E.Weights.Data.Shape(2)) loop
             E.Weights.Data.Set (((J,K)), 0.0); -- Change 0.0 to Random(G), will not accept Standard.Float but will accept 0.0?
          end loop;
       end loop;
+
+      Put_Line("Weights After:");
+      Put_Line(E.Weights.Data.Image);
+
    end;
    
    overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is

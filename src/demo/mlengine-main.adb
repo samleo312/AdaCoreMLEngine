@@ -21,7 +21,13 @@ begin
     M.Graph.Append(Layer);
     M.Graph.Append(Activation);
 
+    InitializeNetwork(M);
 
+    Put_Line("Done");
+
+
+
+    ------------------------ TESTS --------------------------
     --declare
     --procedure Runner is new AUnit.Run.Test_Runner (Linear_Suite.Linear_Suite);
     --    Reporter : AUnit.Reporter.Text.Text_Reporter;
