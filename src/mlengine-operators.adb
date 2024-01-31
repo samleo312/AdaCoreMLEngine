@@ -3,6 +3,7 @@ with Orka; use Orka;
 with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 
+
 package body Mlengine.Operators is
    
    function SumOverX(T : ST_CPU.CPU_Tensor) return ST_CPU.CPU_Tensor is 
@@ -40,7 +41,7 @@ package body Mlengine.Operators is
 
       for J in 1..(E.Weights.Data.Shape(1)) loop
          for K in 1..(E.Weights.Data.Shape(2)) loop
-            E.Weights.Data.Set (((J,K)), 0.0); -- Change 0.0 to Random(G), will not accept Standard.Float but will accept 0.0?
+            E.Weights.Data.Set (((J,K)), Orka.Numerics.Singles.Tensors.Element(Random(G)));
          end loop;
       end loop;
 
