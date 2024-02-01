@@ -1,25 +1,30 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Mlengine.Operators; use Mlengine.Operators;
 with Mlengine.Utilities; use Mlengine.Utilities;
-with AUnit.Reporter.Text;
-with AUnit.Run;
-with Linear_Suite; 
-with Orka; use Orka;
 
 procedure Mlengine.Main is
     M : Model;
 
-    Layer : Func_Access_T := new Linear_T'(Weights => Tensor'(Data => new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2))), 
-    Grad => new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)))), Bias => Tensor'(Data => new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2))), 
-    Grad => new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)))), Input => Tensor'(Data => new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2))), 
-    Grad => new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)))));
+    use ST_CPU;
+    Base_Tensor : constant CPU_Tensor := To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2));
 
-    Activation : Func_Access_T := new ReLU_T;
+    Weights_Data, Weights_Grad, Bias_Data, Bias_Grad, Input_Data, Input_Grad 
+        : constant Tensor_Access := new CPU_Tensor'(Base_Tensor);
+
+    Weights_Tensor : constant Tensor := (Weights_Data, Weights_Grad);
+    Bias_Tensor    : constant Tensor := (Bias_Data, Bias_Grad);
+    Input_Tensor   : constant Tensor := (Input_Data, Input_Grad);
+
+    Layer : aliased Linear_T := (Weights => Weights_Tensor, 
+                                 Bias    => Bias_Tensor, 
+                                 Input   => Input_Tensor);
+
+    Activation : aliased ReLU_T;
 begin
     Put_Line ("Running Mlengine.Main");
 
-    M.Graph.Append(Layer);
-    M.Graph.Append(Activation);
+    M.Graph.Append(Layer'Unchecked_Access);
+    M.Graph.Append(Activation'Unchecked_Access);
 
     InitializeNetwork(M);
 
