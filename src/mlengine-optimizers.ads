@@ -13,6 +13,10 @@ package Mlengine.Optimizers is
     ---------------procedure zero_grad(paramsGrad: in out Float_Array, Float_ArparamsDataray: in out Float_Array);
     procedure zero_grad(params: in out Opt) is abstract;
 
+    -- getters for tensor values
+    function get_data(params: in out Opt) return ST_CPU.CPU_Tensor is abstract;
+    function get_grad(params: in out Opt) return ST_CPU.CPU_Tensor is abstract;
+
     -- define Stochastic Gradient Descent
     -- lr: learning rate of the engine (default = 0.01)
     -- weight_decay:
@@ -27,5 +31,7 @@ package Mlengine.Optimizers is
 
     overriding procedure step (params : in out SGD);
     overriding procedure zero_grad (params: in out SGD); 
+    overriding function get_data(params: in out SGD) return ST_CPU.CPU_Tensor;
+    overriding function get_grad(params: in out SGD) return ST_CPU.CPU_Tensor;
 
 end Mlengine.Optimizers;
