@@ -1,63 +1,57 @@
+with Ada.Numerics;                      use Ada.Numerics;
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+with AUnit.Assertions;                  use AUnit.Assertions;
+with Orka; --for Float32 type
+
+use Orka; --for operator
+with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+
 package body Mlengine.LossFunctions is
+   procedure Forward is
+      -- declaring variables
+      type Test_Array is array (Positive range <>) of Float;
+      X : Test_Array (1 .. 3)       := (2.5, 1.5, 0.7);     -- simulating tensors
+      Targets       : array (1 .. 2) of Natural := (1, 2);  -- target indices
+      MaxValue      : Float := X (1);                       -- max value in array
+      Probabilities : array (1 .. 3) of Float;              -- storing the probabilities
+      Exp_Sum       : Float                     := 0.0;
+      Loss          : Float;
+      Expected_Loss : Float                     := 0.927343;
 
-    -- SoftMaxLoss struct
-    type SoftMaxLoss is record
-        Type_ : Unbounded_String := "normalization";
-        Target: Unbounded_String := "target";  -- Placeholder for target
-    end record;
+   begin
+      --find max value in X
+      for I in X'Range loop
+         if X (I) > MaxValue then
+            MaxValue := X (I);
+         end if;
+      end loop;
+      Put_Line ("Max Value: " & Float'Image (MaxValue));
 
-    -- Constructor of SoftMaxLoss
-    function init_SoftMaxLoss return SoftMaxLoss is 
-    begin 
-        return (Type_ => "normalization");
-    end init_SoftMaxLoss;
+      -- calculate unnormalized probabilities and exponential sum
+      for J in X'Range loop
+         Exp_Sum := Exp_Sum + Exp (X (J) - MaxValue);
+      end loop;
 
-    function Unnormalized_prob (X : Float; MaxX: Float ) return Float is 
-        (Exp(X - MaxX));
+      for K in X'Range loop
+         Probabilities (K) := Exp (X (K) - MaxValue) / Exp_Sum;
+      end loop;
 
-    function FindMax(X: Float_Array) return Float is 
-    MaxValue: Float := 0.0;
-    begin   
-        for F of X loop
-            if F > MaxValue then
-                MaxValue := F;
-            end if;
-        end loop;
-        return MaxValue;
-    end;
+      -- calculate the loss based on the predicted probabilities
+      Loss := 0.0;
+      for k in Targets'Range loop
+         Loss := Loss - Log (Probabilities (Targets (K)));
+      end loop;
+      Loss := Loss / Float (Targets'Length);  -- Average loss over all targets
 
-    procedure Unnormalized_probs(X: in out Float_Array) is
-    MaxVal: Float := FindMax(X);
-    begin 
-        for F in X'range loop
-            X(F) := Unnormalized_prob(X(F), MaxVal);
-        end loop;
+      Put_Line ("Loss: " & Float'Image (Loss));
 
-        -- Add print statements for testing
-        for F in X'range loop 
-            Ada.Text_IO.Put_Line("X(" & F'Image &") = " & X(F)'Image);
-        end loop;
-    end;
+      -- display probabilities
+      for K in Probabilities'Range loop
+         Put_Line ("Probability: " & Float'Image (Probabilities (K)));
+      end loop;
 
-    function Forward (Layer: in out SoftMaxLoss; X : Float_Array; Target : Unbounded_String) is
-        -- Unnormalized_proba : Float := (Unnormalized_prob()); -- insert: np.exp(x-np.max(x,axis=1,keepdims=True))
-        Probability : Float := (Unnormalized_proba/ 1.0); -- insert: unnormalized_proba/np.sum(unnormalized_proba,axis=1,keepdims=True)
-        Target : Unbounded_String := Target; -- self.target = target
-        Loss : Float_Array(1..1) := (0.0);  -- insert: -np.log(self.proba[range(len(target)),target])
-    begin
-        Unnormalized_probs(X); -- insert: np.exp(x-np.max(x,axis=1,keepdims=True))
-        Ada.Text_IO.Put_Line("Loss: " & Loss(1)'Image); -- Print the value of Loss
-    
-    return Loss.mean;    -- return loss.mean()
-    end Forward;
+      Assert (Loss = Expected_Loss, "Loss is incorrect");
 
-    function Backward is 
-    Gradient : Float := Probability; --
-    begin  
-        -- gradient[range(len(self.target)),self.target]-=1.0
-        -- gradient/=len(self.target)
-        Ada.Text_IO.Put_Line("Gradient: " & Gradient'Image); -- Print the value of Gradient
-    return Gradient;
-    end Backward;
+   end Forward;
 
 end Mlengine.LossFunctions;

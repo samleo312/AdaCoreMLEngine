@@ -1,16 +1,57 @@
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
-with Orka; --for Float32 type
-use Orka; --for operator
-with Orka.Numerics.Singles.Tensors.CPU;
-use Orka.Numerics.Singles.Tensors.CPU;
-with Orka.Numerics.Singles.Tensors.CPU;
-use Orka.Numerics.Singles.Tensors.CPU;
+with Orka; use Orka; 
+with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
+
 
 package body Mlengine.Operators is
+   
+   function SumOverX(T : ST_CPU.CPU_Tensor) return ST_CPU.CPU_Tensor is 
+      Result : ST_CPU.CPU_Tensor := ST_CPU.Empty((1,1));
+      Counter : Orka.Float_32;
+   begin
+      for I in 1 .. (T.Shape(1)) loop
+         Counter := 0.0;
+         if T.Shape'Length > 1 then
+            for J in 1 .. (T.Shape(2)) loop
+               Counter := Counter + ST_CPU.Get(T, (I, J));
+            end loop;   
+            declare 
+               Single : ST_CPU.CPU_Tensor := ST_CPU.Zeros((1,1));
+            begin 
+               Single.Set (((1,1)), Counter);
+               if I = 1 then
+                  ST_CPU.Set(Result, (1,1), Counter);
+               else
+                  Result := Result & Single;
+               end if; 
+               
+            end;
+         end if;
+         
+      end loop;
+      return Result; 
+   end;
 
+   procedure InitializeLayer(E : in out Linear_T) is
+      G : Generator; 
+   begin
+      Put_Line("Weights Before:");
+      Put_Line(E.Weights.Data.Image);
+
+      for J in 1..(E.Weights.Data.Shape(1)) loop
+         for K in 1..(E.Weights.Data.Shape(2)) loop
+            E.Weights.Data.Set (((J,K)), Orka.Numerics.Singles.Tensors.Element(Random(G)));
+         end loop;
+      end loop;
+
+      Put_Line("Weights After:");
+      Put_Line(E.Weights.Data.Image);
+
+   end;
+   
    overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
-      Output : ST_CPU.CPU_Tensor := Add((E.Weights.Data.all * X.Data.all), E.Bias.Data.all);
+      Output : ST_CPU.CPU_Tensor := Add((X.Data.all * E.Weights.Data.all), E.Bias.Data.all);
    begin
       E.Input := X; 
       return Output;
@@ -19,7 +60,8 @@ package body Mlengine.Operators is
    overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
       GradInput : ST_CPU.CPU_Tensor := (dY.Data.all * Transpose(E.Weights.Data.all));
    begin
-      E.Weights.Grad := new ST_CPU.CPU_Tensor'(Add(E.Weights.Grad.all, (Transpose(E.Input.Data.all) * dY.Data.all)));
+      E.Weights.Grad := new ST_CPU.CPU_Tensor'(Add(E.Weights.Grad.all, (dY.Data.all * Transpose(E.Input.Data.all))));
+      E.Bias.Grad := new ST_CPU.CPU_Tensor'(SumOverX(dY.Data.all));
       return GradInput;
    end;
 
@@ -68,20 +110,17 @@ package body Mlengine.Operators is
          for I in 1..(E.Activated.Data.Shape(1)) loop
             --for j in tensors columns
             for J in 1..(E.Activated.Data.Shape(2)) loop
-               Put_Line("ran");
                --set cur to dY[i,j]
                cur := (E.Activated.Data((I,J)));
                --return dY * 1.0 or 0.0
                --these are True and False values of if activated is greater than 0
-               if cur < 0.0 then
+               if cur <= 0.0 then
                   dY.Grad.Set (((I,J)), 0.0);
-                  Put_Line("ranny");
                end if;
 
             end loop;
             
          end loop;
-
 
          --return modified dy gradient tensor
          return dY.Grad.All;
@@ -94,6 +133,11 @@ package body Mlengine.Operators is
       begin
          return BlankArray;
       end; 
+
+      procedure InitializeLayer(E : in out ReLU_T) is
+      begin
+         null;
+      end;
 
 
 end Mlengine.Operators;
