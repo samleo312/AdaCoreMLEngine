@@ -7,9 +7,8 @@ with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 
 package body Mlengine.LossFunctions is
 
-   --!!!!!!!!!!!!!!!!!!!!theres going to be conflicts we need to resolve between Orka Float_32, and Numerics Float!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    function Forward (E: in out SoftLossMax_T; X : in out ST_CPU.CPU_Tensor; Target : in array (1 .. 20) of Orka.Float_32) return Orka.Float_32 is
-      maximum : Orka.Float_32 := 0.0;
+      X_Max : Orka.Float_32 := 0.0;
       Maximums : array (1 .. 20) of Orka.Float_32;
       Losses : array (1 .. 20) of Orka.Float_32;
       Unnormalized_Proba : ST_CPU.CPU_Tensor := ST.CPU.To_Tensor((0.0, 0.0, 0.0,
@@ -33,8 +32,7 @@ package body Mlengine.LossFunctions is
                                                                   0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0
                                                                    ), (20,3));
-      --array_counter : Integer := 1;
-      sums : array (1 .. 20) of Orka.Float_32 := (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+      UP_Sums : array (1 .. 20) of Orka.Float_32 := (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
       Losses_Sum : Orka.Float_32 := 0.0;
 
    begin
@@ -45,23 +43,19 @@ package body Mlengine.LossFunctions is
             --for j in tensors columns
             for J in 1..(X.Shape(2)) loop
                
-               if (X((I,J))) > maximum then
-                  maximum := (X((I,J)));
+               if (X((I,J))) > X_Max then
+                  X_Max := (X((I,J)));
                end if;
 
             end loop;
 
             --maximums is maximums of each tensor row
             Maximums(I) := (X((I,J)));
-            --move thru maximums array
-            --array_counter := array_counter + 1;
             --reset max for next row
-            maximum := 0.0;
+            X_Max := 0.0;
             
          end loop;
 
-      --reset array counter
-      --array_counter := 1;
 
       --1b. calc exponentials of (X - Max of its row) adn assign to Un_Prob
 
@@ -73,14 +67,10 @@ package body Mlengine.LossFunctions is
                Unnormalized_Proba.Set (((I,J)), (e ** (X(I,J) - Maximums(I))));
 
             end loop;
-            --increment to next max for row
-            --array_counter := array_counter + 1;
 
             
       end loop;
 
-      --reset array counter
-      --array_counter := 1;
 
       --2a. sum unormalized probs and store in sums array
       --for i in tensors rows
@@ -88,7 +78,7 @@ package body Mlengine.LossFunctions is
             --for j in tensors columns
             for J in 1..(Unnormalized_Proba.Shape(2)) loop
                
-              sums(I) := (sums(I)+X(I,J));
+              UP_Sums(I) := (UP_Sums(I)+X(I,J));
 
             end loop;
             
@@ -101,7 +91,7 @@ package body Mlengine.LossFunctions is
             --for j in tensors columns
             for J in 1..(Unnormalized_Proba.Shape(2)) loop
                
-              E.Proba.Set (((I,J)), (Unnormalized_Proba(I,J) / Sums(I)));
+              E.Proba.Set (((I,J)), (Unnormalized_Proba(I,J) / UP_Sums(I)));
 
             end loop;
             
