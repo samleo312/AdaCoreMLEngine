@@ -1,8 +1,6 @@
 with Ada.Numerics;                      use Ada.Numerics;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
---with AUnit.Assertions;                  use AUnit.Assertions;
-with Orka; --for Float32 type
-use Orka; --for operator
+with Orka; use Orka; 
 with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 
 package body Mlengine.LossFunctions is
@@ -119,4 +117,22 @@ package body Mlengine.LossFunctions is
 
    end Forward;
 
+   function Backward(E : SoftLossMax_T) is
+      Gradient : ST_CPU.CPU_Tensor := E.Proba; 
+      Target : Integer;
+   begin
+
+      for I in E.Target'Range loop
+         Target := E.Target (I);
+         Gradient (I)(Target) := Gradient (I)(Target) - 1;
+
+         for J in Gradient.Shape(1) loop
+            for K in Gradient.Shape(2) loop
+               Gradient (J)(K) := Gradient (J)(K) / 2;
+            end loop;
+         end loop;
+      end loop; 
+
+      return Gradient;
+   end;
 end Mlengine.LossFunctions;

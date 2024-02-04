@@ -16,5 +16,5 @@ package Mlengine.LossFunctions is
 
    type Test_Array is array(Positive range <>) of Float; -- Simulating a Tensor 
    function Forward (X : in out ST_CPU.CPU_Tensor; Target : in array (1 .. 20) of Orka.Float_32) return Orka.Float_32;
-
+   function Backward(E : SoftLossMax_T) return ST_CPU.CPU_Tensor;
 end Mlengine.LossFunctions;
