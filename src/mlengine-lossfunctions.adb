@@ -1,14 +1,15 @@
 with Ada.Numerics;                      use Ada.Numerics;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with Orka; use Orka; 
+with Orka.Numerics.Singles.Tensors; use Orka.Numerics.Singles.Tensors;
 with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 
 package body Mlengine.LossFunctions is
 
-   function Forward (E: in out SoftLossMax_T; X : in out ST_CPU.CPU_Tensor; Target : in array (1 .. 20) of Orka.Float_32) return Orka.Float_32 is
+   function Forward (E: in out SoftLossMax_T; X : in out ST_CPU.CPU_Tensor; Target : Target_Array) return Orka.Float_32 is
       X_Max : Orka.Float_32 := 0.0;
-      Maximums : array (1 .. 20) of Orka.Float_32;
-      Losses : array (1 .. 20) of Orka.Float_32;
+      Maximums : Float_Array_20;
+      Losses : Float_Array_20;
       Unnormalized_Proba : ST_CPU.CPU_Tensor := ST.CPU.To_Tensor((0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,
@@ -30,8 +31,8 @@ package body Mlengine.LossFunctions is
                                                                   0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0
                                                                    ), (20,3));
-      UP_Sums : array (1 .. 20) of Orka.Float_32 := (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-      Losses_Sum : Orka.Float_32 := 0.0;
+      UP_Sums : Float_Array_20 := (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
+      Losses_Sum : Orka.Float_32 := (0.0);
 
    begin
       --1a. find max value of each row and set it to pos in respective maximum array
@@ -48,7 +49,7 @@ package body Mlengine.LossFunctions is
             end loop;
 
             --maximums is maximums of each tensor row
-            Maximums(I) := (X((I,J)));
+            Maximums(I) := (X_Max);
             --reset max for next row
             X_Max := 0.0;
             
@@ -61,8 +62,8 @@ package body Mlengine.LossFunctions is
       for I in 1..(X.Shape(1)) loop
             --for j in tensors columns
             for J in 1..(X.Shape(2)) loop
-               
-               Unnormalized_Proba.Set (((I,J)), (e ** (X(I,J) - Maximums(I))));
+                                                                                                            -- <- CHAR 112
+               Unnormalized_Proba.Set(((I,J)), Orka.Numerics.Singles.Tensors.Element((Ada.Numerics.e ** Float(X(I)(J) - Maximums(I)))));
 
             end loop;
 
@@ -117,7 +118,7 @@ package body Mlengine.LossFunctions is
 
    end Forward;
 
-   function Backward(E : SoftLossMax_T) is
+   function Backward(E : in out SoftLossMax_T) return ST_CPU.CPU_Tensor is 
       Gradient : ST_CPU.CPU_Tensor := E.Proba; 
       Target : Integer;
    begin
