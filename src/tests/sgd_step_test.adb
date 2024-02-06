@@ -5,21 +5,17 @@ with Mlengine;                          use Mlengine;
 with Ada.Text_IO;                       use Ada.Text_IO;
 with Orka;                              use Orka;
 
-package body SGD_Tests is
+package body SGD_Step_Test is
 
-    function Is_Similar (Expected, Result : ST.Element) return Boolean is
-       (abs (Result - Expected) <=
-        ST.Element'Model_Epsilon + 1.0e-05 * abs Expected);
-
-    procedure Assert (Expected, Result : ST.Element; Message : String) is
+    function Name (T : SGD_Step_Test) return AUnit.Message_String is
+        pragma Unreferenced (T);
     begin
-        Assert (Is_Similar (Expected, Result), Message);
-    end Assert;
+        return AUnit.Format ("Test SGD Step Function");
+    end Name;
 
-    procedure Test_Step (T : in out Test_Cases.Test_Case'Class) is
-
+    procedure Run_Test (T : in out SGD_Step_Test) is
         -- test variables
-
+        pragma Unreferenced (T);
         test_lr           : Float;
         test_weight_decay : Float;
         test_momentum     : Float;
@@ -77,55 +73,6 @@ package body SGD_Tests is
             --      end;
             --  end loop;
         end;
-
-    end Test_Step;
-
-    procedure Test_Zero_Grad (T : in out Test_Cases.Test_Case'Class) is
-
-        -- test variables
-
-        test_lr           : Float;
-        test_weight_decay : Float;
-        test_momentum     : Float;
-
-        test_ten        : Tensor;
-        test_velocities : aliased ST.Element_Array := (1.0, 2.0, 3.0, 4.0);
-
-    begin
-        --Test_SGD's tensor
-        test_ten.data :=
-           new ST_CPU.CPU_Tensor'
-              (ST_CPU.To_Tensor ((0.0, 1.0, 2.0, 3.0), (4, 1)));
-        test_ten.grad :=
-           new ST_CPU.CPU_Tensor'
-              (ST_CPU.To_Tensor ((0.0, 1.5, 2.5, 3.5), (4, 1)));
-        declare
-            S      : aliased Mlengine.Optimizers.SGD :=
-               (lr         => test_lr, weight_decay => test_weight_decay,
-                momentum   => test_momentum,
-                velocities => test_velocities'Unchecked_Access, t => test_ten);
-            Answer : ST_CPU.CPU_Tensor               :=
-               ST.CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (4, 1));
-        begin
-            S.zero_grad;
-            Assert (S.t.grad.all = Answer, "Zero Grad is incorrect");
-        end;
-    end Test_Zero_Grad;
-
-    --Register test routines to call
-    procedure Register_Tests (T : in out SGD_Test) is
-        use AUnit.Test_Cases.Registration;
-    begin
-        -- Repeat for each test routine
-        Register_Routine (T, Test_Step'Access, "Test Step");
-        Register_Routine (T, Test_Zero_Grad'Access, "Test Zero Grad");
-    end Register_Tests;
-
-    -- Identifier of test case
-
-    function Name (T : SGD_Test) return Test_String is
-    begin
-        return Format ("Linear Tests");
-    end Name;
-
-end SGD_Tests;
+    end Run_Test;
+    
+end SGD_Step_Test;
