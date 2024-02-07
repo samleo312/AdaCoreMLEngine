@@ -36,7 +36,7 @@ begin
                                                                   0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0
                                                                    ), (20,3)));
-    Proba.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor (      (0.0, 0.0, 0.0,
+    E.Proba.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor (      (0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,

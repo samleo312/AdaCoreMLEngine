@@ -94,9 +94,9 @@ package body Mlengine.LossFunctions is
                   T_Idx : ST.Tensor_Index := (I, J);
                   Normalization : Orka.Float_32 := Un_Prob.Get (T_Idx) / Sums(I);
                begin
-                  Put_Line(I'Image);
-                  Put_Line(J'Image);
+                  
                   Data.Set (T_Idx, Normalization);
+                  Put_Line(Normalization'Image);
                end;
             end loop;
          end loop;
@@ -125,8 +125,8 @@ package body Mlengine.LossFunctions is
       Find_Rows_Max (X, Maximums);
       Compute_Rowwise_Exponentials (X, Maximums, Unnormalized_Proba);
       Sum_Unnormalized_Probabilities (Unnormalized_Proba, UP_Sums);
-      --Normalize_Probabilities (Unnormalized_Proba, UP_Sums, SLM.Proba.Data.all);
-      Negative_Log (Target, X);
+      Normalize_Probabilities (Unnormalized_Proba, UP_Sums, SLM.Proba.Data.all);
+      --Negative_Log (Target, X);
 
       --return
       for I in 1 .. 20 loop
