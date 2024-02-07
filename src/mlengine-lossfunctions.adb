@@ -151,7 +151,7 @@ package body Mlengine.LossFunctions is
    begin
 
       for I in SLM.Target'Range loop
-         Target := Integer (SLM.Target (I));
+         Target := SLM.Target (I);
          declare
             Idx : ST.Tensor_Index := (I, Target);
             Grad_Minus_1 : Orka.Float_32 := Gradient.Data.all.Get(Idx) - 1.0;
@@ -159,19 +159,21 @@ package body Mlengine.LossFunctions is
             Gradient.Data.Set (Idx, Grad_Minus_1);
          end;
 
-         for J in 1 .. Gradient.Data.all.Shape(1) loop
-            for K in 1 .. Gradient.Data.all.Shape(2) loop
-               declare
-                  T_Idx : ST.Tensor_Index := (J, K);
-                  Size_Of_Target : Orka.Float_32 := Orka.Float_32(SLM.Target'Last);
-                  Grad_Div_Length : Orka.Float_32 :=  Gradient.Data.all.Get(T_Idx) / Size_Of_Target;
-               begin
-                  Gradient.Data.Set (T_Idx, Grad_Div_Length);
-               end;
-               
-            end loop;
-         end loop;
+         
       end loop; 
+
+      for J in 1 .. Gradient.Data.all.Shape(1) loop
+         for K in 1 .. Gradient.Data.all.Shape(2) loop
+            declare
+               T_Idx : ST.Tensor_Index := (J, K);
+               Size_Of_Target : Orka.Float_32 := Orka.Float_32(SLM.Target'Last);
+               Grad_Div_Length : Orka.Float_32 :=  Gradient.Data.all.Get(T_Idx) / Size_Of_Target;
+            begin
+               Gradient.Data.Set (T_Idx, Grad_Div_Length);
+            end;
+            
+         end loop;
+      end loop;
       Put_Line(Gradient.Data.all.Image);
       return Gradient.Data.all;
    end;
