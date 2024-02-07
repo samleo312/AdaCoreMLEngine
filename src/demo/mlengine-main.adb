@@ -11,7 +11,7 @@ procedure Mlengine.Main is
 Proba : Tensor;
 Target : Target_Array;
 X: Tensor; --input
-X_Target : Target_Array;
+X_Target : Target_Array := (others => 1);
 E : aliased Mlengine.LossFunctions.SoftLossMax_T := (Proba, Target);
  
 begin
