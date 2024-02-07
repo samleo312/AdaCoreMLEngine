@@ -163,15 +163,16 @@ package body Mlengine.LossFunctions is
             for K in 1 .. Gradient.Data.all.Shape(2) loop
                declare
                   T_Idx : ST.Tensor_Index := (J, K);
-                  Grad_Div_2 : Orka.Float_32 :=  Gradient.Data.all.Get(T_Idx) / 2.0;
+                  Size_Of_Target : Orka.Float_32 := Orka.Float_32(SLM.Target'Last);
+                  Grad_Div_Length : Orka.Float_32 :=  Gradient.Data.all.Get(T_Idx) / Size_Of_Target;
                begin
-                  Gradient.Data.Set (T_Idx, Grad_Div_2);
+                  Gradient.Data.Set (T_Idx, Grad_Div_Length);
                end;
                
             end loop;
          end loop;
       end loop; 
-
+      Put_Line(Gradient.Data.all.Image);
       return Gradient.Data.all;
    end;
 end Mlengine.LossFunctions;
