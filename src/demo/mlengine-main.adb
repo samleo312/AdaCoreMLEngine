@@ -9,23 +9,23 @@ with SGD_Suite;
 with Orka; use Orka;
 
 procedure Mlengine.Main is
-    M : Model;
+--    M : Model;
 
-    use ST_CPU;
-    Base_Tensor : constant CPU_Tensor := To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2));
+--    use ST_CPU;
+--    Base_Tensor : constant CPU_Tensor := To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2));
 
-    Weights_Data, Weights_Grad, Bias_Data, Bias_Grad, Input_Data, Input_Grad 
-        : constant Tensor_Access := new CPU_Tensor'(Base_Tensor);
+--    Weights_Data, Weights_Grad, Bias_Data, Bias_Grad, Input_Data, Input_Grad 
+--        : constant Tensor_Access := new CPU_Tensor'(Base_Tensor);
 
-    Weights_Tensor : constant Tensor := (Weights_Data, Weights_Grad);
-    Bias_Tensor    : constant Tensor := (Bias_Data, Bias_Grad);
-    Input_Tensor   : constant Tensor := (Input_Data, Input_Grad);
+--    Weights_Tensor : constant Tensor := (Weights_Data, Weights_Grad);
+--    Bias_Tensor    : constant Tensor := (Bias_Data, Bias_Grad);
+--    Input_Tensor   : constant Tensor := (Input_Data, Input_Grad);
 
-    Layer : aliased Linear_T := (Weights => Weights_Tensor, 
-                                 Bias    => Bias_Tensor, 
-                                 Input   => Input_Tensor);
+--    Layer : aliased Linear_T := (Weights => Weights_Tensor, 
+--                                 Bias    => Bias_Tensor, 
+--                                 Input   => Input_Tensor);
 
-    Activation : aliased ReLU_T;
+    --Activation : aliased ReLU_T;
 Proba : Tensor;
 Target : Target_Array;
 X: Tensor; --input
@@ -70,12 +70,12 @@ begin
         Bck.Data := new ST_CPU.CPU_Tensor'(Backward(E));
     end;
 
-    M.Graph.Append(Layer'Unchecked_Access);
-    M.Graph.Append(Activation'Unchecked_Access);
+    --M.Graph.Append(Layer'Unchecked_Access);
+    --M.Graph.Append(Activation'Unchecked_Access);
 
-    InitializeNetwork(M);
+    --InitializeNetwork(M);
 
-    Put_Line("Done");
+    --Put_Line("Done");
 
 
 
