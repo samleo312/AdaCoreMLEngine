@@ -98,32 +98,43 @@ package body Mlengine.LossFunctions is
          end loop;
       end;
 
+      procedure Negative_Log  (Target: in Target_Array;
+                               Data : in out ST_CPU.CPU_Tensor) is
+      package Real_Functions is new Ada.Numerics.Generic_Elementary_Functions (Orka.Float_32);
+      begin
+         for I in 1 .. Target'Range loop
+            declare
+            J : Target(I);
+            Element : Orka.Float_32 := Data.Get ((I, J));
+            Log_Of : Orka.Float_32 := Real_Functions.Log (Element, 10);
+            Negative_Log_Of : Orka.Float_32 := -(Log_Of);
+            begin
+               Losses(I) := Negative_Log_Of;
+            end;
+         end loop;
+      end;
+
+      
+
    begin
       Find_Rows_Max (X, Maximums);
       Compute_Rowwise_Exponentials (X, Maximums, Unnormalized_Proba);
       Sum_Unnormalized_Probabilities (Unnormalized_Proba, UP_Sums);
       Normalize_Probabilities (Unnormalized_Proba, UP_Sums, SLM.Proba.Data.all);
+      Negative_Log (Target, X);
 
+      --return
+      for I in 1 .. Target'Range loop
+            Losses_Sum := Losses(I) + Losses_Sum;
+      end loop;
 
-      --  --3a. assign target to SLM.Target
-      --  --SLM.Target := Target;
-
-      --  --4a. iterate thru target, taking target of each row inside E.Proba
-      --  --and takin ghe negative loss of each, appending it to losses array
-      --  for I in Target'Range loop
-      --     null;
-      --     --Losses(I) := (-log(SLM.Proba(I,Target(I))));
-      --  end loop;
-
-      --  --5a. calculate sum of losses
-      --  for I in Target'Range loop
-      --     Losses_Sum := Losses_Sum + Losses(I);
-      --  end loop;
-
-      --  --5b. return loss mean (sums / total num)
-      --  return (Losses_Sum / 20.0);
-
-      return 0.0;
+      declare
+         Average_Losses : Orka.Float_32 := 0.0;
+         begin
+            Average_Losses := Losses_Sum / 20;
+         end;
+      
+      return Average_Losses;
 
    end Forward;
 
