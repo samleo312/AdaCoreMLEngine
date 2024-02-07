@@ -108,7 +108,7 @@ package body Mlengine.LossFunctions is
             declare
             J : Standard.Integer := Target(I);
             Element : Orka.Float_32 := Data.Get ((I, J));
-            Log_Of : Orka.Float_32 := Real_Functions.Log (Element, 10.0);
+            Log_Of : Orka.Float_32 := Real_Functions.Log (Element, Ada.Numerics.e);
             Negative_Log_Of : Orka.Float_32 := -(Log_Of);
             begin
                Losses(I) := Negative_Log_Of;
@@ -125,7 +125,7 @@ package body Mlengine.LossFunctions is
       Sum_Unnormalized_Probabilities (Unnormalized_Proba, UP_Sums);
       
       Normalize_Probabilities (Unnormalized_Proba, UP_Sums, SLM.Proba.Data.all);
-      Put_Line(Unnormalized_Proba.Image);
+      Put_Line(SLM.Proba.Data.all.Image);
       Negative_Log (Target, SLM.Proba.Data.all);
 
       --return
