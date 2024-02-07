@@ -49,6 +49,7 @@ package body Mlengine.LossFunctions is
                Max := (if Element > Max then Element else Max);
             end loop;
             Maxs (I) := Max;
+            --Put_Line (Element'Image);
             Max := 0.0;
          end loop;
       end;
@@ -60,6 +61,7 @@ package body Mlengine.LossFunctions is
       begin
          for I in 1 .. (Data.Shape (1)) loop
             for J in 1 .. (Data.Shape (2)) loop
+               Put_Line (I'Image);
                declare
                   Element : Orka.Float_32 := Data.Get ((I, J));
                   Row_Max : Orka.Float_32 := Maxs (I);
@@ -90,9 +92,10 @@ package body Mlengine.LossFunctions is
             for J in 1 .. Un_Prob.Shape (2) loop
                declare
                   T_Idx : ST.Tensor_Index := (I, J);
-                  Normalization : Orka.Float_32 := Un_Prob.Get (T_Idx) / Sums(I);
+                  --Normalization : Orka.Float_32 := Un_Prob.Get (T_Idx) / Sums(I);
                begin
-                  Data.Set (T_Idx, Normalization);
+                  Put_Line(Sums(I)'Image);
+                  Data.Set (T_Idx, 5.0);
                end;
             end loop;
          end loop;
