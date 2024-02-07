@@ -15,7 +15,7 @@ X_Target : Target_Array;
 E : aliased Mlengine.LossFunctions.SoftLossMax_T := (Proba, Target);
  
 begin
-    X.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor (      (0.0, 0.0, 0.0,
+    X.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor (          (0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,
@@ -66,11 +66,5 @@ begin
         Fwd := Forward(E, X.Data.All, X_Target);
     end;
 
-    --declare
-    --procedure Runner is new AUnit.Run.Test_Runner (Linear_Suite.Linear_Suite);
-    --    Reporter : AUnit.Reporter.Text.Text_Reporter;
-    --begin
-    --    Runner (Reporter);
-    --end;
     
 end Mlengine.Main;
