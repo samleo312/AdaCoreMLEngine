@@ -49,7 +49,6 @@ package body Mlengine.LossFunctions is
                Max := (if Element > Max then Element else Max);
             end loop;
             Maxs (I) := Max;
-            --Put_Line (Element'Image);
             Max := 0.0;
          end loop;
       end;
@@ -79,7 +78,6 @@ package body Mlengine.LossFunctions is
          for I in 1 .. Un_Prob.Shape (1) loop
             for J in 1 .. Un_Prob.Shape (2) loop
               Sums (I) := (Sums (I) + Un_Prob.Get ((I, J)));
-              Put_Line(Sums(I)'Image);
             end loop;
          end loop;
       end;
@@ -94,9 +92,7 @@ package body Mlengine.LossFunctions is
                   T_Idx : ST.Tensor_Index := (I, J);
                   Normalization : Orka.Float_32 := Un_Prob.Get (T_Idx) / Sums(I);
                begin
-                  
                   Data.Set (T_Idx, Normalization);
-                  Put_Line(Normalization'Image);
                end;
             end loop;
          end loop;
@@ -107,6 +103,7 @@ package body Mlengine.LossFunctions is
                                Data : in out ST_CPU.CPU_Tensor) is
       package Real_Functions is new Ada.Numerics.Generic_Elementary_Functions (Orka.Float_32);
       begin
+         Put_Line("Loss");
          for I in 1 .. 20 loop
             declare
             J : Standard.Integer := Target(I);
@@ -115,6 +112,7 @@ package body Mlengine.LossFunctions is
             Negative_Log_Of : Orka.Float_32 := -(Log_Of);
             begin
                Losses(I) := Negative_Log_Of;
+               Put_Line(Losses(I)'Image);
             end;
          end loop;
       end;
@@ -125,8 +123,10 @@ package body Mlengine.LossFunctions is
       Find_Rows_Max (X, Maximums);
       Compute_Rowwise_Exponentials (X, Maximums, Unnormalized_Proba);
       Sum_Unnormalized_Probabilities (Unnormalized_Proba, UP_Sums);
+      
       Normalize_Probabilities (Unnormalized_Proba, UP_Sums, SLM.Proba.Data.all);
-      --Negative_Log (Target, X);
+      Put_Line(Unnormalized_Proba.Image);
+      Negative_Log (Target, SLM.Proba.Data.all);
 
       --return
       for I in 1 .. 20 loop
@@ -137,8 +137,8 @@ package body Mlengine.LossFunctions is
          Average_Losses : Orka.Float_32 := 0.0;
          begin
             Average_Losses := Losses_Sum / 20.0;
-         
-      
+         Put_Line("Loss mean");
+         Put_Line(Average_Losses'Image);
          return Average_Losses;
 
          end;
