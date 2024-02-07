@@ -144,21 +144,31 @@ package body Mlengine.LossFunctions is
    end Forward;
 
    function Backward (SLM : in out SoftLossMax_T) return ST_CPU.CPU_Tensor is 
-      -- Gradient : ST_CPU.CPU_Tensor := SLM.Proba; 
       Gradient : Tensor := SLM.Proba;
       Target : Integer;
    begin
 
-      --  for I in E.Target'Range loop
-      --     Target := Integer (E.Target (I));
-      --     Gradient (I)(Target) := Gradient (I)(Target) - 1;
+      for I in SLM.Target'Range loop
+         Target := Integer (SLM.Target (I));
+         declare
+            Idx : ST.Tensor_Index := (I, Target);
+            Grad_Minus_1 : Orka.Float_32 := Gradient.Data.all.Get(Idx) - 1.0;
+         begin
+            Gradient.Data.Set (Idx, Grad_Minus_1);
+         end;
 
-      --     for J in Gradient.Shape(1) loop
-      --        for K in Gradient.Shape(2) loop
-      --           Gradient (J)(K) := Gradient (J)(K) / 2;
-      --        end loop;
-      --     end loop;
-      --  end loop; 
+         for J in 1 .. Gradient.Data.all.Shape(1) loop
+            for K in 1 .. Gradient.Data.all.Shape(2) loop
+               declare
+                  T_Idx : ST.Tensor_Index := (J, K);
+                  Grad_Div_2 : Orka.Float_32 :=  Gradient.Data.all.Get(T_Idx) / 2.0;
+               begin
+                  Gradient.Data.Set (T_Idx, Grad_Div_2);
+               end;
+               
+            end loop;
+         end loop;
+      end loop; 
 
       return Gradient.Data.all;
    end;
