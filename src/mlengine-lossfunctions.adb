@@ -103,7 +103,6 @@ package body Mlengine.LossFunctions is
                                Data : in out ST_CPU.CPU_Tensor) is
       package Real_Functions is new Ada.Numerics.Generic_Elementary_Functions (Orka.Float_32);
       begin
-         Put_Line("Loss");
          for I in 1 .. 20 loop
             declare
             J : Standard.Integer := Target(I);

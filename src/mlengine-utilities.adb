@@ -23,7 +23,7 @@ package body Mlengine.Utilities is
         end loop; 
     end;
 
-    function Fit(M: in out Model; Data : Tensor; Target : Tensor; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftLossMax_T) is
+    function Fit(M: in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftLossMax_T) is
         Gen_Data : DataGenerator;
         LossHistory : Float_Vector.Vector;
         Itr : Integer := 0;

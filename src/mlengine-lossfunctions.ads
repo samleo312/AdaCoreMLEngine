@@ -4,12 +4,12 @@ package Mlengine.LossFunctions is
 
    type Func_T is interface;
 
-   type Target_Array is array (1 .. 20) of Standard.Integer;
-   type Float_Array is array(1 .. 20) of Orka.Float_32;
+   type Target_Array is array (Positive range <>) of Standard.Integer;
+   type Float_Array is array(Positive range <>) of Orka.Float_32;
    
-   type SoftLossMax_T is new Func_T with record
-      Proba : Tensor ;
-      Target : Target_Array;
+   type SoftLossMax_T (Size : Positive) is new Func_T with record
+      Proba : Tensor;
+      Target : Target_Array(Positive'First .. Size);
    end record;
 
    type Func_Access_T is access all Func_T'Class;
