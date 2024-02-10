@@ -46,6 +46,9 @@ procedure Mlengine.Main is
                                  Bias    => Bias_Tensor, 
                                  Input   => Input_Tensor);
 
+    --dont know what this is actually supposed to be
+    test_velocities : aliased ST.Element_Array := (1.0, 2.0, 3.0, 4.0);
+
     SGD_Object : aliased Mlengine.Optimizers.SGD :=
                (lr         => 1.0, weight_decay => 0.001,
                 momentum   => 0.9,
@@ -55,12 +58,6 @@ procedure Mlengine.Main is
     Target_Tensor : Target_Array;
     Loss_Object : aliased Mlengine.LossFunctions.SoftLossMax_T := (Proba => Proba_Tensor, Target_Tensor);
 
-
-    --  Activation : aliased ReLU_T;
-    --  Proba : Tensor;
-    --  Target : Target_Array;
-    --  X: Tensor; --input
-    --  X_Target : Target_Array := (1,1,3,1,3,3,2,2,2,3,1,2,3,1,1,3,3,2,3,2);
  
 begin
     Put_Line ("Running Mlengine.Main");
