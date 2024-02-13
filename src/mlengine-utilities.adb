@@ -10,7 +10,7 @@ with Linear_Suite;
 
 package body Mlengine.Utilities is
 
-    procedure Add(M : in out Model; Layer: Func_Access_T) is
+    procedure Add(M : in out Model; Layer: Mlengine.Operators.Func_Access_T) is
     begin
         M.Graph.Append(Layer);
         M.Parameters.Append(Layer.Get_Params);
@@ -23,49 +23,92 @@ package body Mlengine.Utilities is
         end loop; 
     end;
 
-    function Fit(M: in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftLossMax_T) is
-        Gen_Data : DataGenerator;
-        LossHistory : Float_Vector.Vector;
-        Itr : Integer := 0;
+    procedure GenSpiralData(Data : out CPU_Tensor; Target : out Target_Array; Points_Per_Class, Num_Classes : Integer) is
+        Radians_Per_Class : constant Float := 2.0 * Ada.Numerics.Pi / Float(Num_Classes);
+    begin
+        for Class in 0 .. Num_Classes - 1 loop
+            for Point_Index in 0 .. Points_Per_Class - 1 loop
+
+                declare
+                    R : Float := Float(Point_Index) / Float(Points_Per_Class);
+                    T : Float := Float(Class) * Radians_Per_Class + ... ; -- Add T Logic
+                    Index : Integer := Class * Points_Per_Class + Point_Index;
+                begin
+                    Data(Index, 1) := R * Ada.Numerics.Sin(T);
+                    Data(Index, 2) := R * Ada.Numerics.Cos(T);
+                    Target(Index) := Class;
+                end;
+            end loop;
+        end loop;
+    end GenSpiralData;
+
+    function Fit(M : in out Model; Data : CPU_Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : Optimizers.SGD; Loss_Fn : LossFunctions.SoftLossMax_T) return Float_Vector.Vector is
+        Loss_History : Float_Vector.Vector;
+        Data_Gen : DataGenerator;
+        X : Tensor;
+        Y : Target_Array;
+        Loss : Float;
+        Grad : Tensor;
+        Batch : Batch_Result;
     begin
         InitializeNetwork(M);
 
-
-        Gen_Data.Data.Data := ST.CPU.To_Tensor((0.05419138, 0.10842358, -0.16752893, 0.561395, 0.7311231, 0.60580504, -0.26001516, -0.46796957, 0.5362811, -0.39603913, 0.26051527, 0.15478744, -0.10809994, 0.5860736, 0.05174225, -0.04818951, -0.24336624, 0.09871892, 0.14073071, -0.86744624, 0.35767263, -0.78053826, -0.26843658, 0.35422122, 0.57703453, -0.35361794, -0.3348171, 0.11351098, -0.60558337, -0.32412556, -0.79294413, -0.08950639, -0.05379663, -0.359635, 0.5690315, -0.08774939, 0.00433535, 0.0604508, -0.8164081, -0.05384514), 
-                                            (20,2));
-        Gen_Data.Target := (1, 3, 3, 2, 1, 1, 3, 2, 3, 1, 1, 3, 1, 3, 2, 2, 2, 1, 1, 2);
-
         for Epoch in 1 .. Num_Epochs loop
-            for I in 1 .. Data_Gen.Target'Range loop
-                Optimizer.zero_grad;
-                for F in M.Graph.First_Index .. M.Graph.Last_Index loop
-                    Data_Gen.Data (I) := F.Forward;
+            Data_Gen.Counter := 0;
+            while Data_Gen.Counter < Data_Gen.Num_Batches loop
+                Batch := Data_Gen.Get_Next_Batch;
+                X := Batch.Batch_Data;
+                Y := Batch.Batch_Target;
+                
+                Optimizer.Zero_Grad;
+
+                -- Forward pass
+                for G of M.Graph loop
+                    X := G.all.Forward(X);
                 end loop;
-                
-                declare
-                    Loss : Orka.Float_32 := Forward(Loss_Fn, Data_Gen.Data, Data.Gen.Target);
-                    Grad : Tensor;
-                begin
-                    Grad.Data := new ST_CPU.CPU_Tensor'(Loss_Fn.Backward);
 
-                    for F in reverse M.Graph'Range loop
-                        Grad.Data.all := F.Backward(Grad);
-                    end loop;
+                Loss := Loss_Fn.Forward(X, Y);
 
-                    LossHistory.Append(Loss);
-                    Itr := Itr + 1; 
-                end;
+                -- Backward pass
+                Grad := Loss_Fn.Backward;
+                for G in Reverse M.Graph loop
+                    Grad := G.all.Backward(Grad);
+                end loop;
 
-                
-                Optimizer.step;
+                -- Update parameters
+                Optimizer.Step;
+
+                Loss_History.Append(Loss);
+                Ada.Text_IO.Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Data_Gen.Counter) & ": " & Float'Image(Loss));
+
+                Data_Gen.Counter := Data_Gen.Counter + 1; -- Increment batch counter
             end loop;
         end loop;
-        return LossHistory;
-    end;
+        return Loss_History;
+    end Fit;
 
-    function Predict(M : in out Model; Data : Tensor) is
-        X : Tensor := Data;
+    function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor is
+    X : CPU_Tensor := Data;
     begin
-        
-    end;
+        for G of M.Graph loop
+            X := G.all.Forward(X);
+        end loop;
+        return X;
+    end Predict;
+
+    function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float is
+        Correct : Integer := 0;
+    begin
+        for I in Predicted'Range loop
+            if Predicted(I) = Float(TestTargets(I)) then
+                Correct := Correct + 1;
+            end if;
+        end loop;
+
+        if Predicted'Length > 0 then
+            return Float(Correct) / Float(Predicted'Length);
+        else
+            return 0.0;
+        end if;
+    end Calculate_Accuracy;
 end Mlengine.Utilities;
