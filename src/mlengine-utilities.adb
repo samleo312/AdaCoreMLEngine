@@ -6,7 +6,8 @@ with Orka;
 use Orka;
 with AUnit.Reporter.Text;
 with AUnit.Run;
-with Linear_Suite; 
+with Linear_Suite;
+with Ada.Numerics. Float_Random; 
 
 package body Mlengine.Utilities is
 
@@ -25,13 +26,18 @@ package body Mlengine.Utilities is
 
     procedure GenSpiralData(Data : out CPU_Tensor; Target : out Target_Array; Points_Per_Class, Num_Classes : Integer) is
         Radians_Per_Class : constant Float := 2.0 * Ada.Numerics.Pi / Float(Num_Classes);
+        Gen : Ada.Numerics.Float_Random.Generator;
     begin
+        Ada.Numerics.Float_Random.Reset(Gen);
+
         for Class in 0 .. Num_Classes - 1 loop
             for Point_Index in 0 .. Points_Per_Class - 1 loop
 
                 declare
                     R : Float := Float(Point_Index) / Float(Points_Per_Class);
-                    T : Float := Float(Class) * Radians_Per_Class + 1; -- Add T Logic instead of 
+                    Start_Radians : Float := Float(Class) * Radians_Per_Class;
+                    End_Radians : Float := (Float(Class) + 1.5) * Radians_Per_Class;
+                    T : Float := Start_Radians + (End_Radians - Start_Radians) * R + 0.1 * (Ada.Numerics.Float_Random.Random(Gen) - 0.5);
                     Index : Integer := Class * Points_Per_Class + Point_Index;
                 begin
                     Data(Index, 1) := R * Ada.Numerics.Sin(T);
