@@ -1,4 +1,4 @@
-with Mlengine.Operators;
+with Mlengine.Operators; use Mlengine.Operators;
 with Mlengine.Optimizers; use Mlengine.Optimizers;
 with Mlengine.LossFunctions; use Mlengine.LossFunctions;
 with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
@@ -24,7 +24,7 @@ package Mlengine.Utilities is
    package Param_Vector is new
      Ada.Containers.Vectors
        (Index_Type   => Natural,
-        Element_Type => ParamsArray);
+        Element_Type => Mlengine.Operators.ParamsArray);
 
    use Param_Vector;
 
@@ -52,7 +52,7 @@ package Mlengine.Utilities is
    procedure Add(M : in out Model; Layer: Mlengine.Operators.Func_Access_T);
    procedure InitializeNetwork(M : in out Model);
    procedure GenSpiralData(Data : out CPU_Tensor; Target : out Target_Array; Points_Per_Class, Num_Classes : Integer);
-   procedure Fit(M: in out Model; Data : CPU_Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftLossMax_T) return Float_Vector.Vector;
+   procedure Fit(M: in out Model; Data : CPU_Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftLossMax_T);
    function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor;
    function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float;
    

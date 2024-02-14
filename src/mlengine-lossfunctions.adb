@@ -13,9 +13,9 @@ package body Mlengine.LossFunctions is
                      Target : in out Target_Array) return Orka.Float_32 is
 
       Losses_Sum : Orka.Float_32 := 0.0;
-      Maximums : Float_Array := (others => 0.0);
-      Losses   : Float_Array := (others => 0.0);
-      UP_Sums  : Float_Array := (others => 0.0);
+      Maximums : Float_Array(1 .. SLM.Size) := (others => 0.0);
+      Losses   : Float_Array(1 .. SLM.Size) := (others => 0.0);
+      UP_Sums  : Float_Array(1 .. SLM.Size) := (others => 0.0);
       Unnormalized_Proba : ST_CPU.CPU_Tensor := ST.CPU.To_Tensor((0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,
                                                                   0.0, 0.0, 0.0,

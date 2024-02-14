@@ -21,8 +21,8 @@ package Mlengine.Optimizers is
     procedure Step(Params: in out Opt) is abstract;
     procedure Zero_Grad(Params: in out Opt) is abstract;
 
-    function Get_Data(Params: in out Opt) return ST_CPU.CPU_Tensor is abstract;
-    function Get_Grad(Params: in out Opt) return ST_CPU.CPU_Tensor is abstract;
+    --function Get_Data(Params: in out Opt) return ST_CPU.CPU_Tensor is abstract;
+    --function Get_Grad(Params: in out Opt) return ST_CPU.CPU_Tensor is abstract;
 
     type SGD is new Opt with record
         Lr, Weight_Decay, Momentum: Float;
@@ -32,8 +32,8 @@ package Mlengine.Optimizers is
 
     overriding procedure Step(Params: in out SGD);
     overriding procedure Zero_Grad(Params: in out SGD);
-    overriding function Get_Data(Params: in out SGD) return ST_CPU.CPU_Tensor;
-    overriding function Get_Grad(Params: in out SGD) return ST_CPU.CPU_Tensor;
+    --overriding function Get_Data(Params: in out SGD) return ST_CPU.CPU_Tensor;
+    --overriding function Get_Grad(Params: in out SGD) return ST_CPU.CPU_Tensor;
 
     --  -- Creation of interfaces for code reuse
     --  type Opt is interface;

@@ -19,13 +19,13 @@ procedure Main is
     Hidden_Units      : constant Integer := 100;
 
     Data              : CPU_Tensor := ST_CPU.Zeros((Samples_Per_Class, Num_Classes));
-    Target_A            : Target_Array(1 .. Samples_Per_Class) := (others => 0);
+    Target_A            : LossFunctions.Target_Array(1 .. Samples_Per_Class) := (others => 0);
     M                 : Model;
     Optim             : SGD;
 
     Proba_Tensor : Tensor;
-    Target : Target_Array;
-    Loss_Fn           : aliased Mlengine.LossFunctions.SoftLossMax_T := (Proba => Proba_Tensor, Target => Target_A);
+    Target : Target_Array(1 .. Samples_Per_Class) := (others => 0);
+    Loss_Fn           : aliased Mlengine.LossFunctions.SoftLossMax_T := (Size => Samples_Per_Class, Proba => Proba_Tensor, Target => Target_A);
 
     Predicted_Labels  : CPU_Tensor := ST_CPU.Zeros((Samples_Per_Class, Num_Classes));
     Accuracy          : Float;

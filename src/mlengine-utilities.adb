@@ -31,7 +31,7 @@ package body Mlengine.Utilities is
 
                 declare
                     R : Float := Float(Point_Index) / Float(Points_Per_Class);
-                    T : Float := Float(Class) * Radians_Per_Class + ... ; -- Add T Logic
+                    T : Float := Float(Class) * Radians_Per_Class + 1; -- Add T Logic instead of 
                     Index : Integer := Class * Points_Per_Class + Point_Index;
                 begin
                     Data(Index, 1) := R * Ada.Numerics.Sin(T);
@@ -42,7 +42,7 @@ package body Mlengine.Utilities is
         end loop;
     end GenSpiralData;
 
-    function Fit(M : in out Model; Data : CPU_Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : Optimizers.SGD; Loss_Fn : LossFunctions.SoftLossMax_T) return Float_Vector.Vector is
+    procedure Fit(M : in out Model; Data : CPU_Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : Optimizers.SGD; Loss_Fn : LossFunctions.SoftLossMax_T) is
         Loss_History : Float_Vector.Vector;
         Data_Gen : DataGenerator;
         X : Tensor;
@@ -84,7 +84,6 @@ package body Mlengine.Utilities is
                 Data_Gen.Counter := Data_Gen.Counter + 1; -- Increment batch counter
             end loop;
         end loop;
-        return Loss_History;
     end Fit;
 
     function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor is
