@@ -37,24 +37,24 @@ package Mlengine.Utilities is
       Parameters : Parameter_Groups_Access;
    end record;
 
-   type DataGenerator (Batch_Size : Integer) is record
-      Data : Tensor;
-      Num_Batches : Integer;
-      Target : Target_Array(1 .. Batch_Size);
-      Counter : Integer;
-   end record;
+  type DataGenerator (Batch_Size : Integer) is record
+    Data : Tensor;
+    Num_Batches : Integer;
+    Target : Target_Array(1 .. Batch_Size);
+    Counter : Integer;
+  end record;
 
-   type Batch_Result (Batch_Size : Integer) is record
-     Batch_Data  : Tensor;
-     Batch_Target: Target_Array(1 .. Batch_Size);
-   end record;
+  type Batch_Result (Batch_Size : Integer) is record
+      Batch_Data  : Tensor;
+      Batch_Target: Target_Array(1 .. Batch_Size);
+  end record;
 
-   procedure Add(M : in out Model; Layer: Mlengine.Operators.Func_Access_T);
-   procedure InitializeNetwork(M : in out Model);
-   procedure GenSpiralData(Data : out CPU_Tensor; Target : out Target_Array; Points_Per_Class, Num_Classes : Integer);
-   procedure Fit(M: in out Model; Data : CPU_Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : SGD ; Loss_Fn : SoftLossMax_T);
-   function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor;
-   function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float;
+  procedure Add(M : in out Model; Layer: Mlengine.Operators.Func_Access_T);
+  procedure InitializeNetwork(M : in out Model);
+  procedure GenSpiralData(Generator : in out DataGenerator; Points_Per_Class, Num_Classes : Integer);
+  procedure Fit(M : in out Model; Points_Per_Class, Num_Classes : Integer; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : Optimizers.SGD; Loss_Fn : LossFunctions.SoftLossMax_T);
+  function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor;
+  function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float;
    
 
 end Mlengine.Utilities;

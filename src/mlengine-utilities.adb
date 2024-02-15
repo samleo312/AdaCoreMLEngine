@@ -24,48 +24,62 @@ package body Mlengine.Utilities is
         end loop; 
     end;
 
-    procedure GenSpiralData(Data : out CPU_Tensor; Target : out Target_Array; Points_Per_Class, Num_Classes : Integer) is
-        Radians_Per_Class : constant Float := 2.0 * Ada.Numerics.Pi / Float(Num_Classes);
-        Gen : Ada.Numerics.Float_Random.Generator;
+
+    procedure GenSpiralData(Points_Per_Class : Positive; Num_Classes : Positive) return Batch_Result is
+    
+        Batch_Size : Constant Integer := Points_Per_Class * Num_Classes;
+        Pi : Constant Float := Long_Float'Pi;
+        Radians_Per_Class : Constant Float := 2.0 * Pi / Float(Num_Classes);
+        Gen : Generator;
+        Data : Tensor;
+        Target : Target_Array(1 .. Batch_Size);
+
+    
     begin
-        Ada.Numerics.Float_Random.Reset(Gen);
-
-        for Class in 0 .. Num_Classes - 1 loop
-            for Point_Index in 0 .. Points_Per_Class - 1 loop
-
+        Data.Data.all := Zeros(Batch_Size, 2);
+        Reset(Gen);
+        
+        for I in 0 .. Num_Classes - 1 loop
+            for J in 1 .. Points_Per_Class loop
                 declare
-                    R : Float := Float(Point_Index) / Float(Points_Per_Class);
-                    Start_Radians : Float := Float(Class) * Radians_Per_Class;
-                    End_Radians : Float := (Float(Class) + 1.5) * Radians_Per_Class;
-                    T : Float := Start_Radians + (End_Radians - Start_Radians) * R + 0.1 * (Ada.Numerics.Float_Random.Random(Gen) - 0.5);
-                    Index : Integer := Class * Points_Per_Class + Point_Index;
+                    Index : Integer := I * Points_Per_Class + J;
+                    T : Float := Float(I) * Radians_Per_Class + Float(J) / Float(Points_Per_Class) * Radians_Per_Class + 0.1 * Float(Random(Gen));
+                    R : Float := Float(J) / Float(Points_Per_Class);
                 begin
-                    Data(Index, 1) := R * Ada.Numerics.Sin(T);
-                    Data(Index, 2) := R * Ada.Numerics.Cos(T);
-                    Target(Index) := Class;
+                    Data.Data.All(Index, 1) := R * Sin(T);
+                    Data.Data.All(Index, 2) := R * Cos(T);
+                    Target(Index) := I;
                 end;
             end loop;
         end loop;
+        
+        return Batch_Result'(Batch_Data => Data, Batch_Target => Target);
     end GenSpiralData;
+
+
+
 
     procedure Fit(M : in out Model; Data : CPU_Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : Optimizers.SGD; Loss_Fn : LossFunctions.SoftLossMax_T) is
         Loss_History : Float_Vector.Vector;
-        Data_Gen : DataGenerator;
+        Data_Gen : DataGenerator(Batch_Size => Batch_Size, Data => Data, Target => Target);
         X : Tensor;
         Y : Target_Array;
         Loss : Float;
         Grad : Tensor;
         Batch : Batch_Result;
+        Itr : Integer := 0;
     begin
         InitializeNetwork(M);
 
         for Epoch in 1 .. Num_Epochs loop
-            Data_Gen.Counter := 0;
-            while Data_Gen.Counter < Data_Gen.Num_Batches loop
+            Data_Gen.Reset; 
+
+            while Data_Gen.Has_Next loop
                 Batch := Data_Gen.Get_Next_Batch;
+
                 X := Batch.Batch_Data;
                 Y := Batch.Batch_Target;
-                
+
                 Optimizer.Zero_Grad;
 
                 -- Forward pass
@@ -81,19 +95,20 @@ package body Mlengine.Utilities is
                     Grad := G.all.Backward(Grad);
                 end loop;
 
-                -- Update parameters
                 Optimizer.Step;
 
                 Loss_History.Append(Loss);
-                Ada.Text_IO.Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Data_Gen.Counter) & ": " & Float'Image(Loss));
+                Ada.Text_IO.Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Itr) & ": " & Float'Image(Loss));
 
-                Data_Gen.Counter := Data_Gen.Counter + 1; -- Increment batch counter
+                Itr := Itr + 1;
             end loop;
         end loop;
     end Fit;
 
+
+
     function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor is
-    X : CPU_Tensor := Data;
+        X : CPU_Tensor := Data;
     begin
         for G of M.Graph loop
             X := G.all.Forward(X);
