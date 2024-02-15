@@ -33,7 +33,6 @@ package body Mlengine.Utilities is
         Gen : Generator;
         Data : Tensor;
         Target : Target_Array(1 .. Batch_Size);
-
     
     begin
         Data.Data.all := Zeros(Batch_Size, 2);
@@ -74,20 +73,16 @@ package body Mlengine.Utilities is
         for Epoch in 1 .. Num_Epochs loop
             Data_Gen.Reset; 
 
-            while Data_Gen.Has_Next loop
-                Batch := Data_Gen.Get_Next_Batch;
-
-                X := Batch.Batch_Data;
-                Y := Batch.Batch_Target;
+            for I in Data_Gen.Target'Range loop
 
                 Optimizer.Zero_Grad;
 
                 -- Forward pass
                 for G of M.Graph loop
-                    X := G.all.Forward(X);
+                    Data_Gen.Data (I) := G.all.Forward(Data_Gen.Data (I));
                 end loop;
 
-                Loss := Loss_Fn.Forward(X, Y);
+                Loss := Loss_Fn.Forward(Data_Gen.Data (I), Data_Gen.Target (I));
 
                 -- Backward pass
                 Grad := Loss_Fn.Backward;
