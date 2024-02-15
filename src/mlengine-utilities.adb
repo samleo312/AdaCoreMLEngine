@@ -71,10 +71,7 @@ package body Mlengine.Utilities is
         InitializeNetwork(M);
 
         for Epoch in 1 .. Num_Epochs loop
-            Data_Gen.Reset; 
-
             for I in Data_Gen.Target'Range loop
-
                 Optimizer.Zero_Grad;
 
                 -- Forward pass
