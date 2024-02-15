@@ -34,7 +34,7 @@ package Mlengine.Utilities is
 
    type Model is record
       Graph : Layer_Vector.Vector;
-      Parameters : Parameter_Groups_Access;
+      Parameters : Param_Vector.Vector;
    end record;
 
   type DataGenerator (Batch_Size : Integer) is record
@@ -51,7 +51,7 @@ package Mlengine.Utilities is
 
   procedure Add(M : in out Model; Layer: Mlengine.Operators.Func_Access_T);
   procedure InitializeNetwork(M : in out Model);
-  procedure GenSpiralData(Generator : in out DataGenerator; Points_Per_Class, Num_Classes : Integer);
+  function GenSpiralData(Points_Per_Class : Positive; Num_Classes : Positive) return Batch_Result;
   procedure Fit(M : in out Model; Points_Per_Class, Num_Classes : Integer; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : Optimizers.SGD; Loss_Fn : LossFunctions.SoftLossMax_T);
   function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor;
   function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float;

@@ -1,11 +1,9 @@
 with Orka.Numerics.Singles.Tensors;
-with Orka.Numerics.Singles.Tensors.CPU;
+with Orka; use Orka;
+with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body Mlengine.Optimizers is
-
-
-
     -- procedure with no input
     -- loops though instance variables "params" and "velocities"
     -- assigns new value to velocity

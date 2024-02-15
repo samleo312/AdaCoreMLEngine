@@ -2,12 +2,12 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Mlengine.Operators;
 with Mlengine.Optimizers;
 with Mlengine.Utilities; use Mlengine.Utilities;
-with Orka;
-use Orka;
+with Orka; use Orka;
 with AUnit.Reporter.Text;
 with AUnit.Run;
 with Linear_Suite;
-with Ada.Numerics. Float_Random; 
+with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
+with Ada.Numerics; use Ada.Numerics;
 
 package body Mlengine.Utilities is
 
@@ -25,10 +25,9 @@ package body Mlengine.Utilities is
     end;
 
 
-    procedure GenSpiralData(Points_Per_Class : Positive; Num_Classes : Positive) return Batch_Result is
+    function GenSpiralData(Points_Per_Class : Positive; Num_Classes : Positive) return Batch_Result is
     
         Batch_Size : Constant Integer := Points_Per_Class * Num_Classes;
-        Pi : Constant Float := Long_Float'Pi;
         Radians_Per_Class : Constant Float := 2.0 * Pi / Float(Num_Classes);
         Gen : Generator;
         Data : Tensor;
@@ -51,7 +50,7 @@ package body Mlengine.Utilities is
                 end;
             end loop;
         end loop;
-        
+        -- Pass data and target as output params instead
         return Batch_Result'(Batch_Data => Data, Batch_Target => Target);
     end GenSpiralData;
 
@@ -61,8 +60,6 @@ package body Mlengine.Utilities is
     procedure Fit(M : in out Model; Data : CPU_Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : Optimizers.SGD; Loss_Fn : LossFunctions.SoftLossMax_T) is
         Loss_History : Float_Vector.Vector;
         Data_Gen : DataGenerator(Batch_Size => Batch_Size, Data => Data, Target => Target);
-        X : Tensor;
-        Y : Target_Array;
         Loss : Float;
         Grad : Tensor;
         Batch : Batch_Result;
