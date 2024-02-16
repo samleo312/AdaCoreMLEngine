@@ -3,7 +3,7 @@
   with Mlengine.Optimizers; use Mlengine.Optimizers;
   with Mlengine.Operators; use Mlengine.Operators;
   with Mlengine.LossFunctions;
- -- with Mlengine.Utilities; use Mlengine.Utilities;
+  with Mlengine.Utilities; use Mlengine.Utilities;
 --  with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 
 procedure Main is
@@ -64,13 +64,13 @@ procedure Main is
 
 begin
 
-    Optim.lr :=
-    Optim.weight_decay :=
-    Optim.momentum :=
-    Optim
-    lr, weight_decay, momentum : Float;
-        t : Tensor;
-        velocities : Elements_Access;
+    --  Optim.lr :=
+    --  Optim.weight_decay :=
+    --  Optim.momentum :=
+    --  Optim
+    --  lr, weight_decay, momentum : Float;
+    --      t : Tensor;
+    --      velocities : Elements_Access;
     null;
 
 
