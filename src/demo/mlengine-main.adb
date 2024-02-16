@@ -1,10 +1,10 @@
---  with Ada.Text_IO; use Ada.Text_IO;
+  with Ada.Text_IO; use Ada.Text_IO;
   with Mlengine; use Mlengine;
   with Mlengine.Optimizers; use Mlengine.Optimizers;
   with Mlengine.Operators; use Mlengine.Operators;
   with Mlengine.LossFunctions;
- -- with Mlengine.Utilities; use Mlengine.Utilities;
---  with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+  with Mlengine.Utilities; use Mlengine.Utilities;
+  with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 
 procedure Main is
     --  package ST renames Orka.Numerics.Singles.Tensors;
@@ -59,28 +59,36 @@ procedure Main is
     --  Layer2 : aliased Func_Access_T := new Linear_T'(Weights => Layer2_Weights_Tensor, 
     --                               Bias    => Layer2_Bias_Tensor, 
     --                               Input   => Layer2_Input_Tensor);
-
     Optim : SGD;
+    M: Model;
 
+    Layer1_Tensor : constant CPU_Tensor := Zeros ((2, 4));
+    Weights_Data, Weights_Grad, Bias_Data, Bias_Grad, Input_Data, Input_Grad 
+        : constant Tensor_Access := new CPU_Tensor'(Layer1_Tensor);
+
+    Weights_Tensor : constant Tensor := (Weights_Data, Weights_Grad);
+    Bias_Tensor    : constant Tensor := (Bias_Data, Bias_Grad);
+    Input_Tensor   : constant Tensor := (Input_Data, Input_Grad);
+
+    Layer1 : aliased Func_Access_T := new Linear_T'(Weights => Weights_Tensor, 
+                                 Bias    => Bias_Tensor, 
+                                 Input   => Input_Tensor);
 begin
+    Add(M, Layer1);
 
-    Optim.lr :=
-    Optim.weight_decay :=
-    Optim.momentum :=
-    Optim
-    lr, weight_decay, momentum : Float;
-        t : Tensor;
-        velocities : Elements_Access;
+    Optim.lr := 0.1;
+    Optim.weight_decay := 0.0001;
+    Optim.momentum := 0.9;
+    Optim.parameters := M.Parameters;
+
+    InitializeSGD(Optim);
+    Step(Optim);
+
+    for I in Optim.velocities.First_Index .. Optim.velocities.Last_Index loop
+        Put_Line(Optim.velocities (I).Data.all.Image);
+    end loop;
+    
     null;
-
-
-
-
-
-
-
-
-
 
     --  GenSpiralData(Data, Target, Samples_Per_Class, Num_Classes);
 
