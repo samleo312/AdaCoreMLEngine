@@ -62,7 +62,7 @@ procedure Main is
     Optim : SGD;
     M: Model;
 
-    Layer1_Tensor : constant CPU_Tensor := Zeros ((2, 4));
+    Layer1_Tensor : constant CPU_Tensor := To_Tensor((1.0, 2.0, 3.0, 4.0, 5.0, 6.0), (2,3));
     Weights_Data, Weights_Grad, Bias_Data, Bias_Grad, Input_Data, Input_Grad 
         : constant Tensor_Access := new CPU_Tensor'(Layer1_Tensor);
 
@@ -82,11 +82,11 @@ begin
     Optim.parameters := M.Parameters;
 
     InitializeSGD(Optim);
-    Step(Optim);
+    Optim.step;
 
-    for I in Optim.velocities.First_Index .. Optim.velocities.Last_Index loop
-        Put_Line(Optim.velocities (I).Data.all.Image);
-    end loop;
+      for I in Optim.velocities.First_Index .. Optim.velocities.Last_Index loop
+          Put_Line(Optim.velocities (I).Data.all.Image);
+      end loop;
     
     null;
 

@@ -19,10 +19,20 @@ package body Mlengine.Optimizers is
     end;
 
     overriding procedure step (Optim: in out SGD) is
-        
     begin
         for I in Optim.parameters.First_Index .. Optim.parameters.Last_Index loop
-            Optim.velocities (I).Data.all := (Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all) + Optim.parameters (I).Grad.all + (Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all);
+            Optim.velocities (I).Data.all := ((Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all) + Optim.parameters (I).Grad.all) + (Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all);
+            declare
+                Momv : CPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all;
+                Wdp : CPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all;
+                Added : CPU_Tensor := Momv + Wdp;
+            begin
+                --Put_Line(Momv.Image);
+                --Put_Line(Wdp.Image);
+                --Put_Line(Added.Image);
+                --Optim.velocities(I).Data.all := Added;
+                null;
+            end;
             Optim.parameters (I).Data.all := Optim.parameters (I).Data.all - (Orka.Numerics.Singles.Tensors.Element(Optim.lr) * Optim.velocities (I).Data.all);
         end loop; 
     end;
