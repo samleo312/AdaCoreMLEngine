@@ -1,6 +1,5 @@
 with Orka.Numerics.Singles.Tensors;
 with Orka; use Orka;
-with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body Mlengine.Optimizers is
@@ -8,40 +7,43 @@ package body Mlengine.Optimizers is
     -- loops though instance variables "params" and "velocities"
     -- assigns new value to velocity
     -- assigns new value to params.t.data)
-    overriding procedure step (params: in out SGD) is
-    grad: ST_CPU.CPU_Tensor := params.t.Grad.all;
-    data: ST_CPU.CPU_Tensor := params.t.Data.all;
+
+    procedure InitializeSGD(Optim : in out SGD) is
+        Velocity : Tensor;
     begin
-        for i in params.velocities'Range loop
-            declare
-                res: ET;
-            begin
-                params.velocities(i) := ET(params.momentum) * params.velocities(i)
-                 + grad.get(i) + ET(params.weight_decay) * data.get(i);
-                res:= data.get(i) - ET(params.lr) * params.velocities(i);
-                params.t.data.set(i, res);
-            end;
+        for I in Optim.parameters.First_Index .. Optim.parameters.Last_Index loop
+            Velocity.Data := new ST_CPU.CPU_Tensor'(Zeros((Optim.parameters (I).Grad.Shape(1), Optim.parameters (I).Grad.Shape(2))));
+            Velocity.Grad := new ST_CPU.CPU_Tensor'(Zeros((2,2)));
+            Optim.velocities.Append(Velocity);
         end loop;
     end;
 
-
---procedure to reset all parameter t.gradient values to 0
-    overriding procedure zero_grad(params : in out SGD) is
+    overriding procedure step (Optim: in out SGD) is
     begin
-        --  Put_Line(params'Image);
-        params.t.Grad.all := ST_CPU.Zeros(params.t.Grad.Shape);
-    end zero_grad;
+        for I in Optim.parameters.First_Index .. Optim.parameters.Last_Index loop
+            Optim.velocities (I).Data.all := ((Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all) + Optim.parameters (I).Grad.all) + (Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all);
+            declare
+                Momv : CPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all;
+                Wdp : CPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all;
+                Added : CPU_Tensor := Momv + Wdp;
+            begin
+                --Put_Line(Momv.Image);
+                --Put_Line(Wdp.Image);
+                --Put_Line(Added.Image);
+                --Optim.velocities(I).Data.all := Added;
+                null;
+            end;
+            Optim.parameters (I).Data.all := Optim.parameters (I).Data.all - (Orka.Numerics.Singles.Tensors.Element(Optim.lr) * Optim.velocities (I).Data.all);
+        end loop; 
+    end;
 
---getters
-    overriding function get_data(params : in out SGD) return ST_CPU.CPU_Tensor is
-        begin
-            return params.t.data.all;
-        end;
-        
-    overriding function get_grad(params : in out SGD) return ST_CPU.CPU_Tensor is
-        begin
-            return params.t.grad.all;
-        end;
+
+    overriding procedure zero_grad(Optim : in out SGD) is
+    begin
+        for I in Optim.parameters.First_Index .. Optim.parameters.Last_Index loop
+            Optim.parameters(I).Grad.all := Zeros(Optim.parameters(I).Grad.Shape);
+        end loop;
+    end zero_grad;
 
 end Mlengine.Optimizers;
 

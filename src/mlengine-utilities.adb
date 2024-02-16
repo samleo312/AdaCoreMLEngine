@@ -16,17 +16,20 @@ with Ada.Numerics.Generic_Elementary_Functions;
 package body Mlengine.Utilities is
 
     procedure Add(M : in out Model; Layer: Mlengine.Operators.Func_Access_T) is
+        Params : ParamsArray := Layer.Get_Params;
     begin
         M.Graph.Append(Layer);
-        M.Parameters.Append(Layer.Get_Params);
+        
+        M.Parameters.Append(Params (1));
+        M.Parameters.Append(Params (2));
     end;
 
-    procedure InitializeNetwork(M : in out Model) is
-    begin
-        for G of M.Graph loop
-            G.all.InitializeLayer;
-        end loop; 
-    end;
+    --  procedure InitializeNetwork(M : in out Model) is
+    --  begin
+    --      for G of M.Graph loop
+    --          G.all.InitializeLayer;
+    --      end loop; 
+    --  end;
 
 
     function GenSpiralData(Points_Per_Class : Positive; Num_Classes : Positive) return Batch_Result is
@@ -105,16 +108,16 @@ package body Mlengine.Utilities is
 
                 Loss := Loss_Fn.Forward(Data_Batch, Target_Batch);
 
-                -- Backward pass
-                Grad := Loss_Fn.Backward;
-                for G in Reverse M.Graph loop
-                    Grad := G.all.Backward(Grad);
-                end loop;
+    --              -- Backward pass
+    --              Grad := Loss_Fn.Backward;
+    --              for G in Reverse M.Graph loop
+    --                  Grad := G.all.Backward(Grad);
+    --              end loop;
 
-                Optimizer.Step;
+    --              Optimizer.Step;
 
-                Loss_History.Append(Loss);
-                Ada.Text_IO.Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Itr) & ": " & Float'Image(Loss));
+    --              Loss_History.Append(Loss);
+    --              Ada.Text_IO.Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Itr) & ": " & Float'Image(Loss));
 
                 Itr := Itr + 1;
                 end;
@@ -126,28 +129,28 @@ package body Mlengine.Utilities is
 
 
 
-    function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor is
-        X : CPU_Tensor := Data;
-    begin
-        for G of M.Graph loop
-            X := G.all.Forward(X);
-        end loop;
-        return X;
-    end Predict;
+    --  function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor is
+    --      X : CPU_Tensor := Data;
+    --  begin
+    --      for G of M.Graph loop
+    --          X := G.all.Forward(X);
+    --      end loop;
+    --      return X;
+    --  end Predict;
 
-    function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float is
-        Correct : Integer := 0;
-    begin
-        for I in Predicted'Range loop
-            if Predicted(I) = Float(TestTargets(I)) then
-                Correct := Correct + 1;
-            end if;
-        end loop;
+    --  function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float is
+    --      Correct : Integer := 0;
+    --  begin
+    --      for I in Predicted'Range loop
+    --          if Predicted(I) = Float(TestTargets(I)) then
+    --              Correct := Correct + 1;
+    --          end if;
+    --      end loop;
 
-        if Predicted'Length > 0 then
-            return Float(Correct) / Float(Predicted'Length);
-        else
-            return 0.0;
-        end if;
-    end Calculate_Accuracy;
+    --      if Predicted'Length > 0 then
+    --          return Float(Correct) / Float(Predicted'Length);
+    --      else
+    --          return 0.0;
+    --      end if;
+    --  end Calculate_Accuracy;
 end Mlengine.Utilities;
