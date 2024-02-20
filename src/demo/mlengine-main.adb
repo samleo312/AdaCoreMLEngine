@@ -4,11 +4,7 @@
   with Mlengine.Operators; use Mlengine.Operators;
   with Mlengine.LossFunctions;
   with Mlengine.Utilities; use Mlengine.Utilities;
-<<<<<<< HEAD
---  with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
-=======
   with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
->>>>>>> 18ffd91a4d057a1d602731f69dfe2d674230d296
 
 procedure Main is
     --  package ST renames Orka.Numerics.Singles.Tensors;
@@ -66,26 +62,9 @@ procedure Main is
     Optim : SGD;
     M: Model;
 
-<<<<<<< HEAD
-begin
-
-    --  Optim.lr :=
-    --  Optim.weight_decay :=
-    --  Optim.momentum :=
-    --  Optim
-    --  lr, weight_decay, momentum : Float;
-    --      t : Tensor;
-    --      velocities : Elements_Access;
-    null;
-
-
-
-
-=======
     Layer1_Tensor : constant CPU_Tensor := To_Tensor((1.0, 2.0, 3.0, 4.0, 5.0, 6.0), (2,3));
     Weights_Data, Weights_Grad, Bias_Data, Bias_Grad, Input_Data, Input_Grad 
         : constant Tensor_Access := new CPU_Tensor'(Layer1_Tensor);
->>>>>>> 18ffd91a4d057a1d602731f69dfe2d674230d296
 
     Weights_Tensor : constant Tensor := (Weights_Data, Weights_Grad);
     Bias_Tensor    : constant Tensor := (Bias_Data, Bias_Grad);

@@ -1,8 +1,9 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Mlengine.Operators;
 with Mlengine.Optimizers;
-with Mlengine.Utilities; use Mlengine.Utilities;
+with Mlengine.LossFunctions; use Mlengine.LossFunctions;
 with Orka; use Orka;
+with Orka.Numerics.Singles.Tensors; use Orka.Numerics.Singles.Tensors;
 
 with AUnit.Reporter.Text;
 with AUnit.Run;
@@ -24,12 +25,12 @@ package body Mlengine.Utilities is
         M.Parameters.Append(Params (2));
     end;
 
-    --  procedure InitializeNetwork(M : in out Model) is
-    --  begin
-    --      for G of M.Graph loop
-    --          G.all.InitializeLayer;
-    --      end loop; 
-    --  end;
+    procedure InitializeNetwork(M : in out Model) is
+    begin
+        for G of M.Graph loop
+            G.all.InitializeLayer;
+        end loop; 
+    end;
 
 
     function GenSpiralData(Points_Per_Class : Positive; Num_Classes : Positive) return Batch_Result is
@@ -71,8 +72,8 @@ package body Mlengine.Utilities is
 
 
 
-    procedure Fit(M : in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : in out Optimizers.SGD; Loss_Fn : LossFunctions.SoftLossMax_T) is
-        Loss_History : Float_Vector.Vector;
+    procedure Fit(M : in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : in out Optimizers.SGD; Loss_Fn : in out LossFunctions.SoftLossMax_T) is
+        Loss_History : Float32_Vector.Vector;
         --Data_Gen : DataGenerator(Batch_Size => Batch_Size, Data => Data, Target => Target);
     
         -- Initialize the Data_Gen record. Note: The direct assignment method for 'Target' needs adjustment
@@ -82,7 +83,7 @@ package body Mlengine.Utilities is
                                     Num_Batches => (Data.Data.Shape(1)/Batch_Size), -- Initialize appropriately (300/20)
                                     Target => Target, -- Placeholder, needs proper initialization
                                     Counter => 0);
-        Loss : Float;
+        Loss : Float_32;
         Grad : Tensor;
         Batch : Batch_Result := (Batch_Size => Batch_Size, Batch_Data => Data, Batch_Target => Target);
         Itr : Integer := 0;
@@ -95,29 +96,29 @@ package body Mlengine.Utilities is
             for I in 1 .. Data_Gen.Num_Batches loop
                 declare
                     --needs to be first 20, 15 times;
-                    Data_Batch : CPU_Tensor := Data_Gen.Data.Data.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)));
-                    Target_Batch : Target_Array(1 .. Batch_Size) := Target(Starter .. (Batch_Size*I));
+                    Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data_Gen.Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))), Grad => new CPU_Tensor'(Zeros((2,2))));
+                    Target_Batch : Mlengine.LossFunctions.Target_Array(1 .. Batch_Size) := Target(Starter .. (Batch_Size*I));
                 begin
                 Optimizer.Zero_Grad;
 
                 -- Forward pass
                 --x y in datagen, x is 20x2 tensor, assuming coords, y is 20x1 target array
                 for G of M.Graph loop
-                    Data_Batch := Mlengine.Operators.Forward(G.all,Data_Batch); --(1,20)(21,40)(41,60)....
+                    Data_Batch.Data.all := Mlengine.Operators.Forward(G.all,Data_Batch); --(1,20)(21,40)(41,60)....
                 end loop;
 
-                Loss := Loss_Fn.Forward(Data_Batch, Target_Batch);
+                Loss := Loss_Fn.Forward(Data_Batch.Data.all, Target_Batch);
 
-    --              -- Backward pass
-    --              Grad := Loss_Fn.Backward;
-    --              for G in Reverse M.Graph loop
-    --                  Grad := G.all.Backward(Grad);
-    --              end loop;
+              -- Backward pass
+                Grad.Data.all := Loss_Fn.Backward;
+                for G in Reverse M.Graph.First_Index .. M.Graph.Last_Index loop
+                    Grad.Data.all := M.Graph (G).all.Backward(Grad);
+                end loop;
 
-    --              Optimizer.Step;
+                Optimizer.Step;
 
-    --              Loss_History.Append(Loss);
-    --              Ada.Text_IO.Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Itr) & ": " & Float'Image(Loss));
+                Loss_History.Append(Loss);
+                Ada.Text_IO.Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Itr) & ": " & Float'Image(Float(Loss)));
 
                 Itr := Itr + 1;
                 end;
