@@ -46,7 +46,6 @@ package body Mlengine.Operators is
    end;
 
 
-   -- Change to CPU_Tensor input
    overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
       Output : ST_CPU.CPU_Tensor := Add((X.Data.all * E.Weights.Data.all), E.Bias.Data.all);
    begin
@@ -54,7 +53,6 @@ package body Mlengine.Operators is
       return Output;
    end;
 
-   -- Change to CPU_Tensor Input
    overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
       GradInput : ST_CPU.CPU_Tensor := (dY.Data.all * Transpose(E.Weights.Data.all));
    begin
