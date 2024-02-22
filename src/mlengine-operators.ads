@@ -1,42 +1,41 @@
-with Mlengine;
-with Ada.Text_IO;
+with Ada.Containers.Indefinite_Hashed_Maps;
+with Ada.Strings.Hash;
 
 package Mlengine.Operators is
-   type Func_T is interface;
-   type Func_Access_T is access all Func_T'Class;
 
+    type Linear_Key is (X, W, B, dW, dB, A);
+    function Linear_Key_Hash (K: Linear_Key) return Ada.Containers.Hash_Type;
+    package Data_Maps is new
+     Ada.Containers.Indefinite_Hashed_Maps
+       (Key_Type        => Linear_Key,
+        Element_Type    => ND_Array,
+        Hash            => Linear_Key_Hash,
+        Equivalent_Keys => "=");
+    use Data_Maps;
+    function Image (D : in Data_Maps.Map) return String;
 
-   type Index is range 1 .. 2;
-   type ParamsArray is array(Index) of Tensor;
+    type Operator_T is interface;
+    function Forward (O : in out Operator_T) return ND_Array is abstract;
+    function Backward (O : in out Operator_T; dL : ND_Array) return ND_Array is abstract;
 
-   function Forward (E : in out Func_T; X : in Tensor) return ST_CPU.CPU_Tensor is abstract;
-   function Backward (E : in out Func_T; dY : in Tensor) return ST_CPU.CPU_Tensor is abstract;
-   function Get_Params (E : Func_T) return ParamsArray is abstract;
-   procedure InitializeLayer(E : in out Func_T) is abstract;
-   
+    type Linear_T is new Operator_T with record
+        D : Data_Maps.Map;
+    end record;
+    overriding function Forward (L : in out Linear_T) return ND_Array
+        with Pre => L.D(W).Shape (2) = L.D(X).Shape (1) and
+                    L.D(B).Shape (1) = L.D(W).Shape (1);
+    overriding function Backward (L : in out Linear_T; dL : in ND_Array) return ND_Array;
 
+    type Rectified_T is new Operator_T with record
+        D : Data_Maps.Map;
+    end record;
+    overriding function Forward (R : in out Rectified_T) return ND_Array;
+    overriding function Backward (R : in out Rectified_T; dL : in ND_Array) return ND_Array;
 
-   type Linear_T is new Func_T with record
-      Weights : Tensor;
-      Bias : Tensor;
-      Input : Tensor;
-   end record;
-
-   
-   
-   overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor;
-   overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor;
-   overriding function Get_Params (E : Linear_T) return ParamsArray;
-   procedure InitializeLayer(E : in out Linear_T);
-
-   
-   type ReLU_T is new Func_T with record
-      Activated : Tensor;
-   end record;
-
-   overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_CPU.CPU_Tensor;
-   overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_CPU.CPU_Tensor;
-   overriding function Get_Params (E : ReLU_T) return ParamsArray;
-   procedure InitializeLayer(E : in out ReLU_T);
+    --  type Softmax_T is new Operator_T with record
+    --      D : Data_Maps.Map;
+    --  end record;
+    --  overriding function Forward (S : in out Softmax_T) return ND_Array;
+    --  overriding function Backward (S : in out Softmax_T; dL : in ND_Array) return ND_Array;
 
 end Mlengine.Operators;

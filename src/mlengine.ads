@@ -1,20 +1,11 @@
-with Orka.Numerics.Singles.Tensors;
+with Orka;
 with Orka.Numerics.Singles.Tensors.CPU;
+use Orka.Numerics.Singles.Tensors.CPU;
 
 package Mlengine is
+    package OT renames Orka.Numerics.Singles.Tensors;
+    package OTI renames Orka.Numerics.Singles.Tensors.CPU; -- (O)rka (T)ensor (I)mplementation
 
-    package ST renames Orka.Numerics.Singles.Tensors;
-    package ST_CPU renames Orka.Numerics.Singles.Tensors.CPU;
-
-    type Tensor_Access is access ST_CPU.CPU_Tensor; 
-
-    type Tensor is record
-        Data : Tensor_Access;
-        Grad : Tensor_Access;
-    end record;
-
-    type Elements_Access is access all ST.Element_Array;
-
-    subtype ET is ST.Element;
-
+    subtype F32 is Orka.Float_32;
+    subtype ND_Array is OTI.CPU_Tensor;
 end Mlengine;
