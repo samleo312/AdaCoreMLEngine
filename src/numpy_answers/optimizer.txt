@@ -1,0 +1,9 @@
+For Input Parameters:
+    Parameters = [[1, 2, 3], [4, 5, 6]]
+    Learning Rate = 0.1
+    Weight Decay = 0.0001
+    Momentum = 0.9
+
+Output:
+    [[ 1.00010E+00, 2.00020E+00, 3.00030E+00],
+    [ 4.00040E+00, 5.00050E+00, 6.00060E+00]]

@@ -43,30 +43,30 @@ procedure Main is
 
 begin
   ----------------------------- LINEAR LAYERS -------------------------------------
-    TestWeights.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
-    TestWeights.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+    --  TestWeights.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+    --  TestWeights.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
-    TestBias.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
-    TestBias.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+    --  TestBias.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+    --  TestBias.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
-    TestInput.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
-    TestInput.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+    --  TestInput.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+    --  TestInput.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
-    InputTensor.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
-    InputTensor.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+    --  InputTensor.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
+    --  InputTensor.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 2.0, 3.0, 4.0), (2, 2)));
 
-    declare
-        L : aliased Mlengine.Operators.Linear_T := (TestWeights, TestBias, TestInput);
-        Answer : ST_CPU.CPU_Tensor := ST.CPU.To_Tensor((8.0, 12.0, 18.0, 26.0), (2,2));
-        ForwardResult : ST_CPU.CPU_Tensor := L.Forward(InputTensor);
-        BackwardResult : ST_CPU.CPU_Tensor := L.Backward(InputTensor);
-    begin
-        Put_Line("Linear Forward Result: ");
-        Put_Line(ForwardResult.Image);
+    --  declare
+    --      L : aliased Mlengine.Operators.Linear_T := (TestWeights, TestBias, TestInput);
+    --      Answer : ST_CPU.CPU_Tensor := ST.CPU.To_Tensor((8.0, 12.0, 18.0, 26.0), (2,2));
+    --      ForwardResult : ST_CPU.CPU_Tensor := L.Forward(InputTensor);
+    --      BackwardResult : ST_CPU.CPU_Tensor := L.Backward(InputTensor);
+    --  begin
+    --      Put_Line("Linear Forward Result: ");
+    --      Put_Line(ForwardResult.Image);
 
-        Put_Line("Linear Backward Result: ");
-        Put_Line(BackwardResult.Image);
-    end;
+    --      Put_Line("Linear Backward Result: ");
+    --      Put_Line(BackwardResult.Image);
+    --  end;
   ----------------------------------------------------------------------------------
   ----------------------------------- RELU -----------------------------------------
     --  R_Forward_Activated.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((0.0, 0.0, 0.0, 0.0), (2, 2)));
@@ -79,7 +79,7 @@ begin
     --  R_Test_Input.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, -3.0, 4.0, -5.0), (2, 2)));
 
     --  R_dY.Data := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 3.0, 4.0, 5.0), (2, 2)));
-    --  R_dY.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((1.0, 3.0, 4.0, 5.0), (2, 2)));
+    --  R_dY.Grad := new ST_CPU.CPU_Tensor'(ST_CPU.To_Tensor ((9.0, 10.0, 11.0, 12.0), (2, 2)));
 
     --  declare
     --      --ReLU object
@@ -116,23 +116,24 @@ begin
     --  begin
     --      Put_Line("SoftMaxLoss Forward Result:");
     --      Fwd := Forward(E, X.Data.All, X_Target);
-    --      --Bck.Data := new ST_CPU.CPU_Tensor'(Backward(E));
+    --      Put_Line("SoftMaxLoss Backward Result:");
+    --      Bck.Data := new ST_CPU.CPU_Tensor'(Backward(E));
     --  end;
   ----------------------------------------------------------------------------------
   ------------------------------------SGD Optimizer---------------------------------
-    --  Add(M, Layer1);
+    Add(M, Layer1);
 
-    --  Optim.lr := 0.1;
-    --  Optim.weight_decay := 0.0001;
-    --  Optim.momentum := 0.9;
-    --  Optim.parameters := M.Parameters;
+    Optim.lr := 0.1;
+    Optim.weight_decay := 0.0001;
+    Optim.momentum := 0.9;
+    Optim.parameters := M.Parameters;
 
-    --  InitializeSGD(Optim);
-    --  Optim.step;
+    InitializeSGD(Optim);
+    Optim.step;
 
-    --    Put_Line("SGD Optimizer Result:");
-    --    for I in Optim.velocities.First_Index .. Optim.velocities.Last_Index loop
-    --        Put_Line(Optim.velocities (I).Data.all.Image);
-    --    end loop;
+      Put_Line("SGD Optimizer Result:");
+      for I in Optim.velocities.First_Index .. Optim.velocities.Last_Index loop
+          Put_Line(Optim.velocities (I).Data.all.Image);
+      end loop;
   ----------------------------------------------------------------------------------
 end Main;
