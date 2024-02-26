@@ -32,7 +32,8 @@ package body Mlengine.spiraldata is
       -- Generate points along the radius of the spiral
       Data : ST_CPU.CPU_Tensor := ST_CPU.Zeros((Num_Classes*Points_Per_Class,2));
 
-      Target : ST_CPU.CPU_Tensor := ST_CPU.Zeros(Num_Classes*Points_Per_Class);
+      --  Target : ST_CPU.CPU_Tensor := ST_CPU.Zeros(Num_Classes*Points_Per_Class);
+      Target : Target_Array (1..(Num_Classes * Points_Per_Class)) := (others => 0);
 
       R : Float_Array := Linspace (0.0, 1.0, 10);
 
@@ -40,10 +41,10 @@ package body Mlengine.spiraldata is
       Radians_Per_Class : constant Float := 2.0 * Pi / Float (Num_Classes);
 
    begin
-      Put_Line(ST_CPU.Image(Data));
-      Put_Line(ST_CPU.Image(Target));
-      Put_Line(R'Image);
-      Put_Line(Radians_Per_Class'Image);
+      --  Put_Line(ST_CPU.Image(Data));
+      --  Put_Line(ST_CPU.Image(Target));
+      --  Put_Line(R'Image);
+      --  Put_Line(Radians_Per_Class'Image);
       -- Loop through each class to generate spiral data
       for I in 1 .. Num_Classes loop
          -- Generate angles for each point in the spiral with some randomness
@@ -54,32 +55,35 @@ package body Mlengine.spiraldata is
             for J in 1 .. Points_Per_Class loop
                T(J) :=  T(J) + (Generate_Gaussian_Random * Small_Constant);
             end loop;
-            Put_Line(T'Image);   -- output varies from python version since I starts at 1 and not 0;
+            --  Put_Line(T'Image);   -- output varies from python version since I starts at 1 and not 0;
 
             -- Generate the coordinates for each point in the spiral using polar coordinates
             for J in 1 .. Points_Per_Class loop
-               --  Data.set((J, 1), 5.0);
-               Data.set(((J+ (Points_Per_Class * (I-1)), 1)), ((1.0))); -- change 1.0 to sin and cos values.
-               Data.set(((J+ (Points_Per_Class * (I-1)), 2)), ((1.0)));
-
-               --  Data (J + (I - 1) * Points_Per_Class)(1) :=
-               --    R (J) * Sin (T (J));
-               --  Data (J + (I - 1) * Points_Per_Class)(2) :=
-               --    R (J) * Cos (T (J));
+               declare
+                  x_res : F32 := F32(R(J) * Sin(T(J)));
+                  y_res : F32 := F32(R(J) * Cos(T(J)));
+               begin
+                  --  Data.set((J, 1), 5.0);
+                        --    data[i*points_per_class:(i+1)*points_per_class] = np.c_[r*np.sin(t),r*np.cos(t)]
+                           --   r = np.linspace(0,1,points_per_class)
+                  Data.set(((J+ (Points_Per_Class * (I-1)), 1)), (x_res));
+                  Data.set(((J+ (Points_Per_Class * (I-1)), 2)), (y_res));
+               end;
             end loop;
-            Put_Line("------------------");
-            Put_Line(ST_CPU.Image(Data));
+            --  Put_Line("------------------");
+            --  Put_Line(ST_CPU.Image(Data));
 
             -- Set target values for each class
             for J in 1 .. Points_Per_Class loop
                --  Target (J + (I - 1) * Points_Per_Class)(J) := I;
-               Target.set(J + (I-1)* Points_Per_Class, 5.0);   -- replace 5.5 with I
+               Target(J + (I-1)* Points_Per_Class) := (I); -- needs to be an array of integers as defined in loss
             end loop;
-               Put_Line(ST_CPU.Image(Target));  
+               --  Put_Line(ST_CPU.Image(Target));  
          end;
       end loop;
    
-
+      Put_Line(ST_CPU.Image(Data));
+      Put_Line(Target'Image);
       -- Perform any further processing or return the data and target arrays
    end Generate_Spiral_Data;
 end Mlengine.spiraldata;
