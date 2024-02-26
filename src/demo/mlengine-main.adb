@@ -1,14 +1,19 @@
-  with Ada.Text_IO; use Ada.Text_IO;
-  with Mlengine; use Mlengine;
-  with Mlengine.Optimizers; use Mlengine.Optimizers;
-  with Mlengine.Operators; use Mlengine.Operators;
-  with Mlengine.LossFunctions;
-  with Mlengine.Utilities; use Mlengine.Utilities;
-  with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+with Ada.Text_IO; use Ada.Text_IO;
+with Mlengine.Operators; use Mlengine.Operators;
+with Mlengine.Utilities; use Mlengine.Utilities;
+with AUnit.Reporter.Text;
+with AUnit.Run;
+with Linear_Suite; 
+with SGD_Suite;
+with Orka; use Orka;
+with Generate_Gaussian_Random;
+with Mlengine.spiraldata; use Mlengine.spiraldata;
 
-procedure Main is
-    --  package ST renames Orka.Numerics.Singles.Tensors;
-    --  package ST_CPU renames Orka.Numerics.Singles.Tensors.CPU;
+procedure Mlengine.Main is
+    Points_Per_Class : Integer := 10;
+    Num_Classes : Integer := 3;
+
+    M : Model;
 
     --  Batch_Size        : constant Integer := 20;
     --  Num_Epochs        : constant Integer := 200;

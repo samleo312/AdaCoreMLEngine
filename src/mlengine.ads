@@ -17,4 +17,6 @@ package Mlengine is
 
     subtype ET is ST.Element;
 
+    subtype F32 is Orka.Float_32;
+    
 end Mlengine;
