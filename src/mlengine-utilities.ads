@@ -42,11 +42,10 @@ package Mlengine.Utilities is
 
   procedure Add(M : in out Model; Layer: Mlengine.Operators.Func_Access_T);
   procedure InitializeNetwork(M : in out Model);
-  function GenSpiralData(Points_Per_Class : Positive; Num_Classes : Positive) return Batch_Result;
   procedure Fit(M : in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : in out Optimizers.SGD; Loss_Fn : in out LossFunctions.SoftLossMax_T);
   
-  --  function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor;
-  --  function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float;
+  function Predict(M : in out Model; Data : Tensor) return CPU_Tensor;
+  --function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float;
    
 
 end Mlengine.Utilities;

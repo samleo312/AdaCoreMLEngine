@@ -4,10 +4,6 @@ with Mlengine.Optimizers;
 with Mlengine.LossFunctions; use Mlengine.LossFunctions;
 with Orka; use Orka;
 with Orka.Numerics.Singles.Tensors; use Orka.Numerics.Singles.Tensors;
-
-with AUnit.Reporter.Text;
-with AUnit.Run;
-with Linear_Suite;
 with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 with Ada.Numerics; use Ada.Numerics;
 with Ada.Numerics.Generic_Elementary_Functions;
@@ -31,45 +27,6 @@ package body Mlengine.Utilities is
             G.all.InitializeLayer;
         end loop; 
     end;
-
-
-    function GenSpiralData(Points_Per_Class : Positive; Num_Classes : Positive) return Batch_Result is
-        package Real_Functions is new Ada.Numerics.Generic_Elementary_Functions (Orka.Float_32);
-        Batch_Size : Constant Integer := Points_Per_Class * Num_Classes;
-        Radians_Per_Class : Constant  Orka.Float_32 := 2.0 * Pi /  Orka.Float_32(Num_Classes);
-        Gen : Generator;
-        Data : Tensor;
-        Target : Target_Array(1 .. Batch_Size);
-    
-    begin
-        Data.Data.all := Zeros((Batch_Size, 2));
-        Reset(Gen);
-        
-        for I in 0 .. Num_Classes - 1 loop
-            for J in 1 .. Points_Per_Class loop
-                declare
-                    Index : Integer := I * Points_Per_Class + J;
-                    T :  Orka.Float_32 :=  Orka.Float_32(I) * Radians_Per_Class +  Orka.Float_32(J) /  Orka.Float_32(Points_Per_Class) * Radians_Per_Class + 0.1 *  Orka.Float_32(Random(Gen));
-                    R : Float := Float(J) / Float(Points_Per_Class);
-                    R_Sin :  Orka.Float_32 := Real_Functions.Sin(T);
-                    Idx_I1 : ST.Tensor_Index := (Index, 1);
-                    Idx_I2 : ST.Tensor_Index := (Index, 2);
-                    R_Cos : Orka.Float_32 := Real_Functions.Cos(T);
-                begin
-                    Data.Data.Set (Idx_I1, R_Sin);
-                    Data.Data.Set (Idx_I2, R_Cos);
-                    --Data.Data((Index, 1)) := R * Sin(T);
-                    --Data.Data((Index, 2)) := R * Cos(T);
-                    Target(Index) := I;
-                end;
-            end loop;
-        end loop;
-        -- Pass data and target as output params instead
-        --data should be 150x2
-        return Batch_Result'(Batch_Size => Batch_Size, Batch_Data => Data, Batch_Target => Target);
-    end GenSpiralData;
-
-
 
 
     procedure Fit(M : in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : in out Optimizers.SGD; Loss_Fn : in out LossFunctions.SoftLossMax_T) is
@@ -130,28 +87,44 @@ package body Mlengine.Utilities is
 
 
 
-    --  function Predict(M : in out Model; Data : CPU_Tensor) return CPU_Tensor is
-    --      X : CPU_Tensor := Data;
-    --  begin
-    --      for G of M.Graph loop
-    --          X := G.all.Forward(X);
-    --      end loop;
-    --      return X;
-    --  end Predict;
+    function Predict(M : in out Model; Data : Tensor) return CPU_Tensor is
+        X : Tensor := Data;
+    begin
+        for G of M.Graph loop
+            X.Data.all := G.all.Forward(X);
+        end loop;
+        return X.Data.all;
+    end Predict;
 
-    --  function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float is
-    --      Correct : Integer := 0;
-    --  begin
-    --      for I in Predicted'Range loop
-    --          if Predicted(I) = Float(TestTargets(I)) then
-    --              Correct := Correct + 1;
-    --          end if;
-    --      end loop;
+    function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float is
+        function ArgMax (Row : CPU_Tensor) return Natural is
+            Max_Index : Integer := 1;
+        begin
+            for I in 2 .. Row.Shape(2) loop
+                declare
+                    Row_Value : Float_32 := Row(I);
+                    Max_Value : Float_32 := Row(Max_Index);
+                begin
+                    if Row_Value > Max_Value then
+                        Max_Index := I;
+                    end if;
+                end;
+            end loop;
+            return Max_Index;
+        end ArgMax;
 
-    --      if Predicted'Length > 0 then
-    --          return Float(Correct) / Float(Predicted'Length);
-    --      else
-    --          return 0.0;
-    --      end if;
-    --  end Calculate_Accuracy;
+        Correct_Predictions : Natural := 0;
+        Accuracy : Float;
+    begin        
+        -- Calculate the number of correct predictions
+        for I in 1 .. Predicted.Shape(1) loop
+            if ArgMax (Predicted (I)) = TestTargets(I) then
+                Correct_Predictions := Correct_Predictions + 1;
+            end if;
+        end loop;
+
+        -- Calculate accuracy
+        Accuracy := Float(Correct_Predictions / TestTargets'Length);
+        return Accuracy;
+    end Calculate_Accuracy;
 end Mlengine.Utilities;
