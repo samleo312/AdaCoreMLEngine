@@ -11,9 +11,9 @@ procedure Main is
     package ST renames Orka.Numerics.Singles.Tensors;
     package ST_CPU renames Orka.Numerics.Singles.Tensors.CPU;
 
-    Batch_Size        : constant Integer := 20;
+    Batch_Size        : constant Integer := 10;
     Num_Epochs        : constant Integer := 200;
-    Samples_Per_Class : constant Integer := 100;
+    Samples_Per_Class : constant Integer := 10;
     Num_Classes       : constant Integer := 3;
     Hidden_Units      : constant Integer := 100;
 
@@ -61,16 +61,7 @@ procedure Main is
                                  Bias    => Layer2_Bias_Tensor, 
                                  Input   => Layer2_Input_Tensor);
 begin
-    Add(M, Layer1);
-
-    Optim.lr := 0.1;
-    Optim.weight_decay := 0.0001;
-    Optim.momentum := 0.9;
-    Optim.parameters := M.Parameters;
-
     InitializeSGD(Optim);
-    Optim.step;
-
     Generate_Spiral_Data(Samples_Per_Class, Num_Classes, Data.Data.all, Target);
 
     InitializeNetwork(M);
@@ -80,14 +71,14 @@ begin
     Add(M, Layer2);
 
     Optim.Parameters := M.Parameters;
-    Optim.Lr := 1.0;
+    Optim.Lr := 0.1;
     Optim.Weight_Decay := 0.001;
     Optim.Momentum := 0.9;
 
 
     Fit(M, Data, Target, Batch_Size, Num_Epochs, Optim, Loss_Fn);
 
-    Predicted_Labels := Predict(M, Data);
+    --  Predicted_Labels := Predict(M, Data);
     --Accuracy := Calculate_Accuracy(Predicted_Labels, Target);
 
     Put_Line("Model Accuracy = " & Float'Image(Accuracy));

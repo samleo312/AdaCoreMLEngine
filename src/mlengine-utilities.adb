@@ -35,14 +35,12 @@ package body Mlengine.Utilities is
     
         -- Initialize the Data_Gen record. Note: The direct assignment method for 'Target' needs adjustment
         -- due to the nature of its definition in the record.
-        Data_Gen : DataGenerator := (Batch_Size => Batch_Size,
-                                    Data => Data, -- Direct assignment from the parameter
-                                    Num_Batches => (Data.Data.Shape(1)/Batch_Size), -- Initialize appropriately (300/20)
-                                    Target => Target, -- Placeholder, needs proper initialization
-                                    Counter => 0);
+       
+        Num_Batches : Integer := Data.Data.Shape(1)/Batch_Size;
+        Counter : Integer := 0;
+        
         Loss : Float_32;
         Grad : Tensor;
-        Batch : Batch_Result := (Batch_Size => Batch_Size, Batch_Data => Data, Batch_Target => Target);
         Itr : Integer := 0;
         Starter : Integer := 1;
 
@@ -50,10 +48,10 @@ package body Mlengine.Utilities is
         InitializeNetwork(M);
 
         for Epoch in 1 .. Num_Epochs loop
-            for I in 1 .. Data_Gen.Num_Batches loop
+            for I in 1 .. Num_Batches loop
                 declare
                     --needs to be first 20, 15 times;
-                    Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data_Gen.Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))), Grad => new CPU_Tensor'(Zeros((2,2))));
+                    Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))), Grad => new CPU_Tensor'(Zeros((2,2))));
                     Target_Batch : Mlengine.LossFunctions.Target_Array(1 .. Batch_Size) := Target(Starter .. (Batch_Size*I));
                 begin
                 Optimizer.Zero_Grad;
@@ -75,7 +73,7 @@ package body Mlengine.Utilities is
                 Optimizer.Step;
 
                 Loss_History.Append(Loss);
-                Ada.Text_IO.Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Itr) & ": " & Float'Image(Float(Loss)));
+                Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Itr) & ": " & Float'Image(Float(Loss)));
 
                 Itr := Itr + 1;
                 end;
@@ -85,16 +83,14 @@ package body Mlengine.Utilities is
         
     end Fit;
 
-
-
-    function Predict(M : in out Model; Data : Tensor) return CPU_Tensor is
-        X : Tensor := Data;
-    begin
-        for G of M.Graph loop
-            X.Data.all := G.all.Forward(X);
-        end loop;
-        return X.Data.all;
-    end Predict;
+    --  function Predict(M : in out Model; Data : Tensor) return CPU_Tensor is
+    --      X : Tensor := Data;
+    --  begin
+    --      for G of M.Graph loop
+    --          X.Data.all := G.all.Forward(X);
+    --      end loop;
+    --      return X.Data.all;
+    --  end Predict;
 
     function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float is
         function ArgMax (Row : CPU_Tensor) return Natural is

@@ -28,13 +28,6 @@ package Mlengine.Utilities is
       Parameters : Tensor_Vector.Vector;
    end record;
 
-  type DataGenerator (Batch_Size : Integer) is record
-    Data : Tensor;
-    Num_Batches : Integer;
-    Target : Target_Array(1 .. Batch_Size);
-    Counter : Integer;
-  end record;
-
   type Batch_Result (Batch_Size : Integer) is record
       Batch_Data  : Tensor;
       Batch_Target: Target_Array(1 .. Batch_Size);
@@ -44,8 +37,8 @@ package Mlengine.Utilities is
   procedure InitializeNetwork(M : in out Model);
   procedure Fit(M : in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : in out Optimizers.SGD; Loss_Fn : in out LossFunctions.SoftLossMax_T);
   
-  function Predict(M : in out Model; Data : Tensor) return CPU_Tensor;
-  --function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float;
+  --function Predict(M : in out Model; Data : Tensor) return CPU_Tensor;
+  function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float;
    
 
 end Mlengine.Utilities;
