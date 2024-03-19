@@ -17,7 +17,7 @@ procedure Main is
     Num_Classes       : constant Integer := 3;
     Hidden_Units      : constant Integer := 100;
 
-    Data              : Tensor := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((Samples_Per_Class, Num_Classes))), Grad => new CPU_Tensor'(ST_CPU.Zeros((Samples_Per_Class, Num_Classes))));
+    Data              : Tensor := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((Samples_Per_Class, 2))), Grad => new CPU_Tensor'(ST_CPU.Zeros((Samples_Per_Class, 2))));
     Target_A            : LossFunctions.Target_Array(1 .. Samples_Per_Class) := (others => 0);
     M                 : Model;
     Optim             : SGD;

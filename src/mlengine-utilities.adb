@@ -31,11 +31,7 @@ package body Mlengine.Utilities is
 
     procedure Fit(M : in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : in out Optimizers.SGD; Loss_Fn : in out LossFunctions.SoftLossMax_T) is
         Loss_History : Float32_Vector.Vector;
-        --Data_Gen : DataGenerator(Batch_Size => Batch_Size, Data => Data, Target => Target);
     
-        -- Initialize the Data_Gen record. Note: The direct assignment method for 'Target' needs adjustment
-        -- due to the nature of its definition in the record.
-       
         Num_Batches : Integer := Data.Data.Shape(1)/Batch_Size;
         Counter : Integer := 0;
         
@@ -47,13 +43,14 @@ package body Mlengine.Utilities is
     begin
         InitializeNetwork(M);
 
+        Put_Line(Data.Data.all.Image);
         for Epoch in 1 .. Num_Epochs loop
             for I in 1 .. Num_Batches loop
                 declare
                     --needs to be first 20, 15 times;
                     Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))), Grad => new CPU_Tensor'(Data.Grad.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))));
                     Target_Batch : Mlengine.LossFunctions.Target_Array(1 .. Batch_Size) := Target(Starter .. (Batch_Size*I));
-                
+
                 begin
                 Optimizer.Zero_Grad;
 
@@ -63,14 +60,10 @@ package body Mlengine.Utilities is
                 for G of M.Graph loop
                     
                     declare
-                        Test : CPU_Tensor := Mlengine.Operators.Forward(G.all,Data_Batch);
+                        Test: CPU_Tensor := Mlengine.Operators.Forward(G.all,Data_Batch); -- We want to assign the result of this function, no matter the shape, back to Data Batch.
                     begin
                         null;
-                        --  Put_Line(Data_Batch.Data.all.Shape(1)'Image);
-                        --  Put_Line(Data_Batch.Data.all.Shape(2)'Image);
-                        --  Put_Line("----------------");
                     end;
-                    --Data_Batch.Data.all := Mlengine.Operators.Forward(G.all,Data_Batch); --(1,20)(21,40)(41,60)....
                 end loop;
 
 

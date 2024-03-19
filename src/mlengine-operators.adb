@@ -50,20 +50,21 @@ package body Mlengine.Operators is
    overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
 
    begin
+
+      Put_Line("-----Weights-----");
+      Put_Line("-----Shape-----");
+      Put_Line(E.Weights.Data.all.Shape(1)'Image);
+      Put_Line(E.Weights.Data.all.Shape(2)'Image);
+      --  Put_Line("-----Tensor-----");
+      --  Put_Line(E.Weights.Data.all.Image);
+      --  Put_Line("--------------------------");
+
       Put_Line("-----DATA-----");
       Put_Line("-----Shape-----");
       Put_Line(X.Data.all.Shape(1)'Image);
       Put_Line(X.Data.all.Shape(2)'Image);
-      Put_Line("-----Tensor-----");
-      Put_Line(X.Data.all.Image);
-
-      Put_Line("-----LAYER-----");
-      Put_Line("-----Shape-----");
-      Put_Line(E.Weights.Data.all.Shape(1)'Image);
-      Put_Line(E.Weights.Data.all.Shape(2)'Image);
-      Put_Line("-----Tensor-----");
-      Put_Line(E.Weights.Data.all.Image);
-      Put_Line("--------------------------");
+      --  Put_Line("-----Tensor-----");
+      --  Put_Line(X.Data.all.Image);
 
       declare
          Multi : ST_CPU.CPU_Tensor := X.Data.all * E.Weights.Data.all;
