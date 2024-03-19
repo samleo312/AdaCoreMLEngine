@@ -51,16 +51,29 @@ package body Mlengine.Utilities is
             for I in 1 .. Num_Batches loop
                 declare
                     --needs to be first 20, 15 times;
-                    Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))), Grad => new CPU_Tensor'(Zeros((2,2))));
+                    Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))), Grad => new CPU_Tensor'(Data.Grad.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))));
                     Target_Batch : Mlengine.LossFunctions.Target_Array(1 .. Batch_Size) := Target(Starter .. (Batch_Size*I));
+                
                 begin
                 Optimizer.Zero_Grad;
 
                 -- Forward pass
                 --x y in datagen, x is 20x2 tensor, assuming coords, y is 20x1 target array
+                
                 for G of M.Graph loop
-                    Data_Batch.Data.all := Mlengine.Operators.Forward(G.all,Data_Batch); --(1,20)(21,40)(41,60)....
+                    
+                    declare
+                        Test : CPU_Tensor := Mlengine.Operators.Forward(G.all,Data_Batch);
+                    begin
+                        null;
+                        --  Put_Line(Data_Batch.Data.all.Shape(1)'Image);
+                        --  Put_Line(Data_Batch.Data.all.Shape(2)'Image);
+                        --  Put_Line("----------------");
+                    end;
+                    --Data_Batch.Data.all := Mlengine.Operators.Forward(G.all,Data_Batch); --(1,20)(21,40)(41,60)....
                 end loop;
+
+
 
                 Loss := Loss_Fn.Forward(Data_Batch.Data.all, Target_Batch);
 

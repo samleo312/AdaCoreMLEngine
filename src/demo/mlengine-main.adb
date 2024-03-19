@@ -67,7 +67,7 @@ begin
     InitializeNetwork(M);
 
     Add(M, Layer1);
-    Add(M, ReLU_Object);
+    --Add(M, ReLU_Object); -- SHOULD NOT ADD ANYTHING TO MODEL PARAMS! NEEDS FIXED
     Add(M, Layer2);
 
     Optim.Parameters := M.Parameters;

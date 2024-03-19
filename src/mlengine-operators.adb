@@ -48,10 +48,31 @@ package body Mlengine.Operators is
 
    -- Change to CPU_Tensor input
    overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
-      Output : ST_CPU.CPU_Tensor := Add((X.Data.all * E.Weights.Data.all), E.Bias.Data.all);
+
    begin
-      E.Input := X; 
-      return Output;
+      Put_Line("-----DATA-----");
+      Put_Line("-----Shape-----");
+      Put_Line(X.Data.all.Shape(1)'Image);
+      Put_Line(X.Data.all.Shape(2)'Image);
+      Put_Line("-----Tensor-----");
+      Put_Line(X.Data.all.Image);
+
+      Put_Line("-----LAYER-----");
+      Put_Line("-----Shape-----");
+      Put_Line(E.Weights.Data.all.Shape(1)'Image);
+      Put_Line(E.Weights.Data.all.Shape(2)'Image);
+      Put_Line("-----Tensor-----");
+      Put_Line(E.Weights.Data.all.Image);
+      Put_Line("--------------------------");
+
+      declare
+         Multi : ST_CPU.CPU_Tensor := X.Data.all * E.Weights.Data.all;
+         Output : ST_CPU.CPU_Tensor := Add(Multi, E.Bias.Data.all);
+      begin
+         E.Input := X;
+         return Output;
+      end;
+
    end;
 
    -- Change to CPU_Tensor Input
@@ -129,6 +150,8 @@ package body Mlengine.Operators is
       overriding function Get_Params (E : ReLU_T) return ParamsArray is
          BlankArray : ParamsArray;
       begin
+         BlankArray (1) := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((2,2))), Grad => new CPU_Tensor'(ST_CPU.Zeros((2,2))));
+         BlankArray (2) := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((2,2))), Grad => new CPU_Tensor'(ST_CPU.Zeros((2,2))));
          return BlankArray;
       end; 
 

@@ -41,8 +41,7 @@ package body Mlengine.Optimizers is
     overriding procedure zero_grad(Optim : in out SGD) is
     begin
         for I of Optim.parameters loop
-            Optim.parameters (I).Grad.all := Zeros(Optim.parameters (I).Grad.Shape);
-            --Put_Line(I.Grad.all.Image);
+            I.Grad.all := Zeros(I.Grad.Shape);
         end loop;
     end zero_grad;
 
