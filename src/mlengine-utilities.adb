@@ -43,14 +43,13 @@ package body Mlengine.Utilities is
     begin
         InitializeNetwork(M);
 
-        Put_Line(Data.Data.all.Image);
         for Epoch in 1 .. Num_Epochs loop
             for I in 1 .. Num_Batches loop
                 declare
                     --needs to be first 20, 15 times;
                     Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))), Grad => new CPU_Tensor'(Data.Grad.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))));
                     Target_Batch : Mlengine.LossFunctions.Target_Array(1 .. Batch_Size) := Target(Starter .. (Batch_Size*I));
-
+                    X : Tensor := Data_Batch;
                 begin
                 Optimizer.Zero_Grad;
 
@@ -58,12 +57,7 @@ package body Mlengine.Utilities is
                 --x y in datagen, x is 20x2 tensor, assuming coords, y is 20x1 target array
                 
                 for G of M.Graph loop
-                    
-                    declare
-                        Test: CPU_Tensor := Mlengine.Operators.Forward(G.all,Data_Batch); -- We want to assign the result of this function, no matter the shape, back to Data Batch.
-                    begin
-                        null;
-                    end;
+                    X.Data := new CPU_Tensor'(Mlengine.Operators.Forward(G.all,X)); -- We want to assign the result of this function, no matter the shape, back to Data Batch.
                 end loop;
 
 
