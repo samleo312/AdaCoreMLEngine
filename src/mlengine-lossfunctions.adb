@@ -16,27 +16,7 @@ package body Mlengine.LossFunctions is
       Maximums : Float_Array(1 .. SLM.Size) := (others => 0.0);
       Losses   : Float_Array(1 .. SLM.Size) := (others => 0.0);
       UP_Sums  : Float_Array(1 .. SLM.Size) := (others => 0.0);
-      Unnormalized_Proba : ST_CPU.CPU_Tensor := ST.CPU.To_Tensor((0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0), 
-                                                                  (20,3));
+      Unnormalized_Proba : ST_CPU.CPU_Tensor := Zeros((SLM.Size,3));
       
       procedure Find_Rows_Max (Data : in ST_CPU.CPU_Tensor; 
                                Maxs : in out Float_Array) is
@@ -77,7 +57,12 @@ package body Mlengine.LossFunctions is
       begin
          for I in 1 .. Un_Prob.Shape (1) loop
             for J in 1 .. Un_Prob.Shape (2) loop
-              Sums (I) := (Sums (I) + Un_Prob.Get ((I, J)));
+              declare
+               E : Orka.Float_32 := Un_Prob.Get ((I, J));
+              begin
+                  Sums (I) := (Sums (I) + E);
+              end;
+            
             end loop;
          end loop;
       end;
@@ -103,7 +88,7 @@ package body Mlengine.LossFunctions is
                                Data : in out ST_CPU.CPU_Tensor) is
       package Real_Functions is new Ada.Numerics.Generic_Elementary_Functions (Orka.Float_32);
       begin
-         for I in 1 .. 20 loop
+         for I in 1 .. SLM.Size loop
             declare
             J : Standard.Integer := Target(I);
             Element : Orka.Float_32 := Data.Get ((I, J));
@@ -111,7 +96,6 @@ package body Mlengine.LossFunctions is
             Negative_Log_Of : Orka.Float_32 := -(Log_Of);
             begin
                Losses(I) := Negative_Log_Of;
-               Put_Line(Losses(I)'Image);
             end;
          end loop;
       end;
@@ -122,13 +106,14 @@ package body Mlengine.LossFunctions is
       Find_Rows_Max (X, Maximums);
       Compute_Rowwise_Exponentials (X, Maximums, Unnormalized_Proba);
       Sum_Unnormalized_Probabilities (Unnormalized_Proba, UP_Sums);
-      
+
       Normalize_Probabilities (Unnormalized_Proba, UP_Sums, SLM.Proba.Data.all);
       Put_Line(SLM.Proba.Data.all.Image);
       Negative_Log (Target, SLM.Proba.Data.all);
+      
 
       --return
-      for I in 1 .. 20 loop
+      for I in 1 .. SLM.Size loop
             Losses_Sum := Losses(I) + Losses_Sum;
       end loop;
 
@@ -149,7 +134,7 @@ package body Mlengine.LossFunctions is
       Target : Integer;
    begin
 
-      for I in SLM.Target'Range loop
+      for I in 1 .. SLM.Target'Length loop
          Target := SLM.Target (I);
          declare
             Idx : ST.Tensor_Index := (I, Target);
@@ -173,7 +158,6 @@ package body Mlengine.LossFunctions is
             
          end loop;
       end loop;
-      Put_Line(Gradient.Data.all.Image);
       return Gradient.Data.all;
    end;
 end Mlengine.LossFunctions;

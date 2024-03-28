@@ -18,12 +18,12 @@ procedure Main is
     Hidden_Units      : constant Integer := 100;
 
     Data              : Tensor := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((Samples_Per_Class, 2))), Grad => new CPU_Tensor'(ST_CPU.Zeros((Samples_Per_Class, 2))));
-    Target_A            : LossFunctions.Target_Array(1 .. Samples_Per_Class) := (others => 0);
+    Target_A            : LossFunctions.Target_Array(1 .. Samples_Per_Class) := (others => 1);
     M                 : Model;
     Optim             : SGD;
 
-    Proba_Tensor : Tensor;
-    Target : Mlengine.LossFunctions.Target_Array(1 .. Samples_Per_Class) := (others => 0);
+    Proba_Tensor : Tensor := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((Batch_Size, 3))), Grad => new CPU_Tensor'(ST_CPU.Zeros((Batch_Size, 3))));
+    Target : Mlengine.LossFunctions.Target_Array(1 .. Samples_Per_Class) := (others => 1);
     Loss_Fn           : aliased Mlengine.LossFunctions.SoftLossMax_T := (Size => Samples_Per_Class, Proba => Proba_Tensor, Target => Target_A);
 
     Predicted_Labels  : CPU_Tensor := ST_CPU.Zeros((Samples_Per_Class, Num_Classes));

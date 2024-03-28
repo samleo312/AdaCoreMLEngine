@@ -47,7 +47,8 @@ package body Mlengine.Utilities is
             for I in 1 .. Num_Batches loop
                 declare
                     --needs to be first 20, 15 times;
-                    Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))), Grad => new CPU_Tensor'(Data.Grad.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))));
+                    Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))),
+                    Grad => new CPU_Tensor'(Data.Grad.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))));
                     Target_Batch : Mlengine.LossFunctions.Target_Array(1 .. Batch_Size) := Target(Starter .. (Batch_Size*I));
                     X : Tensor := Data_Batch;
                 begin
@@ -65,7 +66,7 @@ package body Mlengine.Utilities is
                 Loss := Loss_Fn.Forward(Data_Batch.Data.all, Target_Batch);
 
               -- Backward pass
-                Grad.Data.all := Loss_Fn.Backward;
+                Grad.Data := new CPU_Tensor'(Loss_Fn.Backward);
                 for G in Reverse M.Graph.First_Index .. M.Graph.Last_Index loop
                     Grad.Data.all := M.Graph (G).all.Backward(Grad);
                 end loop;
@@ -77,8 +78,10 @@ package body Mlengine.Utilities is
 
                 Itr := Itr + 1;
                 end;
+
+                Starter := Starter + Batch_Size;
+
             end loop;
-             Starter := Starter + Batch_Size;
         end loop;
         
     end Fit;
