@@ -21,7 +21,6 @@ package body Mlengine.Optimizers is
     overriding procedure step (Optim: in out SGD) is
     begin
         for I in Optim.parameters.First_Index .. Optim.parameters.Last_Index loop
-            Put_Line(I'Image);
             Optim.velocities (I).Data.all := ((Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all) + Optim.parameters (I).Grad.all) + (Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all);
             declare
                 Momv : CPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all;
