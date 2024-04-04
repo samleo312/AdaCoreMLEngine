@@ -6,37 +6,29 @@ with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 
 package body Mlengine.Operators is
    
-   function SumOverX(T : ST_CPU.CPU_Tensor) return ST_CPU.CPU_Tensor is 
-      Result : ST_CPU.CPU_Tensor := ST_CPU.Zeros((1,1));
-      Counter : Orka.Float_32;
-   begin
-      Put_Line(T.Image);
-      for I in 1 .. (T.Shape(1)) loop
-         Counter := 0.0;
-         if T.Shape'Length > 1 then
-            for J in 1 .. (T.Shape(2)) loop
-               Counter := Counter + ST_CPU.Get(T, (I, J));
-            end loop; 
-            declare 
-               Single : ST_CPU.CPU_Tensor := ST_CPU.Zeros((1,1));
-            begin 
-               Single.Set (((1,1)), Counter);
-               if I = 1 then
-                  ST_CPU.Set(Result, (1,1), Counter);
-               else
-                  Put_Line(I'Image);
-                  Put_Line(Result.Image);
-                  Put_Line(Single.Image);
-                  Result := Result & Single;
-                  
-               end if; 
+      function SumOverX(T : ST_CPU.CPU_Tensor) return ST_CPU.CPU_Tensor is
+         Result : ST_CPU.CPU_Tensor := ST_CPU.Zeros((1, T.Shape(1)));
+      begin
+         if T.Shape(1) > 1 then
+            for I in 1 .. T.Shape(1) loop
+
+               declare
+                  Row_Sum : Float_32 := 0.0;
+               begin
                
-            end;
+               for J in 1 .. T.Shape(2) loop
+                  Row_Sum := Row_Sum + ST_CPU.Get(T, (I, J));
+               end loop;
+               ST_CPU.Set(Result, (1, I), Row_Sum);
+               end;
+            end loop;
+
+            return Result;
+         else
+            return T;
          end if;
-         
-      end loop;
-      return Result; 
-   end;
+      end SumOverX;
+
 
    procedure InitializeLayer(E : in out Linear_T) is
       G : Generator; 

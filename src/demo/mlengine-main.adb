@@ -61,7 +61,6 @@ procedure Main is
                                  Bias    => Layer2_Bias_Tensor, 
                                  Input   => Layer2_Input_Tensor);
 begin
-    InitializeSGD(Optim);
     Generate_Spiral_Data(Samples_Per_Class, Num_Classes, Data.Data.all, Target);
 
     InitializeNetwork(M);
@@ -75,6 +74,7 @@ begin
     Optim.Weight_Decay := 0.001;
     Optim.Momentum := 0.9;
 
+    InitializeSGD(Optim);
 
     Fit(M, Data, Target, Batch_Size, Num_Epochs, Optim, Loss_Fn);
 

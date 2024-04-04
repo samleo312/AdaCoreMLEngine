@@ -58,7 +58,7 @@ package body Mlengine.Utilities is
                 --x y in datagen, x is 20x2 tensor, assuming coords, y is 20x1 target array
                 
                 for G of M.Graph loop
-                    X.Data := new CPU_Tensor'(Mlengine.Operators.Forward(G.all,X)); -- We want to assign the result of this function, no matter the shape, back to Data Batch.
+                    X.Data := new CPU_Tensor'(Mlengine.Operators.Forward(G.all,X));
                 end loop;
 
 
@@ -67,8 +67,8 @@ package body Mlengine.Utilities is
 
               -- Backward pass
                 Grad.Data := new CPU_Tensor'(Loss_Fn.Backward);
-                for G in Reverse M.Graph.First_Index .. M.Graph.Last_Index loop
-                    Grad.Data.all := M.Graph (G).all.Backward(Grad);
+                for G of Reverse M.Graph loop
+                    Grad.Data := new CPU_Tensor'(G.all.Backward(Grad));
                 end loop;
 
                 Optimizer.Step;

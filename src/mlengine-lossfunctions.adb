@@ -108,7 +108,7 @@ package body Mlengine.LossFunctions is
       Sum_Unnormalized_Probabilities (Unnormalized_Proba, UP_Sums);
 
       Normalize_Probabilities (Unnormalized_Proba, UP_Sums, SLM.Proba.Data.all);
-      Put_Line(SLM.Proba.Data.all.Image);
+      --Put_Line(SLM.Proba.Data.all.Image);
       Negative_Log (Target, SLM.Proba.Data.all);
       
 
