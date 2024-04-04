@@ -8,5 +8,5 @@ with Ada.Strings.Hash;
 
 package Mlengine.spiraldata is
 
-procedure Generate_Spiral_Data (Points_Per_Class : Integer; Num_Classes : Integer; Data_Return : out CPU_Tensor; Target_Return : out Target_Array);
+function Generate_Spiral_Data (Points_Per_Class : Integer; Num_Classes : Integer; Target_Return : out Target_Array) return CPU_Tensor;
 end Mlengine.spiraldata;

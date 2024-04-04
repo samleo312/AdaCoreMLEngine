@@ -29,62 +29,106 @@ package body Mlengine.Utilities is
     end;
 
 
-    procedure Fit(M : in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : in out Optimizers.SGD; Loss_Fn : in out LossFunctions.SoftLossMax_T) is
-        Loss_History : Float32_Vector.Vector;
-    
-        Num_Batches : Integer := Data.Data.Shape(1)/Batch_Size;
-        Counter : Integer := 0;
-        
-        Loss : Float_32;
-        Grad : Tensor;
-        Itr : Integer := 0;
-        Starter : Integer := 1;
+   procedure Fit
+      (M          : in out Model; Data : Tensor; Target : Target_Array;
+       Batch_Size :        Integer; Num_Epochs : Integer;
+       Optimizer  : in out Optimizers.SGD;
+       Loss_Fn    : in out LossFunctions.SoftLossMax_T)
+   is
+       Loss_History : Float32_Vector.Vector;
 
-    begin
-        InitializeNetwork(M);
+       Num_Batches : Integer := (Data.Data.Shape (1) / Batch_Size);
+       Counter     : Integer := 0;
 
-        for Epoch in 1 .. Num_Epochs loop
-            for I in 1 .. Num_Batches loop
-                declare
-                    --needs to be first 20, 15 times;
-                    Data_Batch : Tensor := Tensor'(Data => new CPU_Tensor'(Data.Data.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))),
-                    Grad => new CPU_Tensor'(Data.Grad.all.Get(Range_Type'(Start => Starter, Stop => (Batch_Size*I)))));
-                    Target_Batch : Mlengine.LossFunctions.Target_Array(1 .. Batch_Size) := Target(Starter .. (Batch_Size*I));
-                    X : Tensor := Data_Batch;
-                begin
-                Optimizer.Zero_Grad;
+       Loss    : Float_32;
+       Grad    : Tensor;
+       Itr     : Integer := 0;
+       Starter : Integer := 1;
 
-                -- Forward pass
-                --x y in datagen, x is 20x2 tensor, assuming coords, y is 20x1 target array
+   begin
+       InitializeNetwork (M);
+        Put_Line("Data Size" & Data.Data.all.Shape'Image);
+        Put_Line("Num Batchs " & Num_Batches'Image);
+
+       for Epoch in 1 .. Num_Epochs loop
+           Starter := 1; 
+           for I in 1 .. Num_Batches loop
+               declare
+                   --needs to be first 20, 15 times;
+                   B : Integer := Starter;
+                   E : Integer := Batch_Size * I;
+
+                   D : CPU_Tensor := Data.Data.all;
+
+               begin
+                --  Put_Line("Epoch " & Epoch'Image);
+                --  Put_Line("Batch " & I'Image);
+                --  Put_Line("B " & B'Image);
+                --  Put_Line("E " & E'Image);
+                --  Put_Line("D " & D.Shape(1)'Image & " " & D.Shape(2)'Image);
                 
-                for G of M.Graph loop
-                    X.Data := new CPU_Tensor'(Mlengine.Operators.Forward(G.all,X));
-                end loop;
+                   declare
+                       Data_Batch   : Tensor :=
+                          Tensor'
+                             (Data =>
+                                 new CPU_Tensor'
+                                    (Data.Data.all.Get
+                                        (Range_Type'
+                                            (Start => Starter,
+                                           Stop    => (Batch_Size * I)))),
+                              Grad =>
+                                 new CPU_Tensor'
+                                    (Data.Grad.all.Get
+                                        (Range_Type'
+                                            (Start => Starter,
+                                              Stop => (Batch_Size * I)))));
+                       Target_Batch :
+                          Mlengine.LossFunctions.Target_Array
+                             (1 .. Batch_Size) :=
+                          Target (Starter .. (Batch_Size * I));
+                       X            : Tensor := Data_Batch;
+                   begin
+                       Optimizer.Zero_Grad;
 
+                       -- Forward pass
+                       --x y in datagen, x is 20x2 tensor, assuming coords, y is 20x1 target array
 
+                       for G of M.Graph loop
+                           X.Data :=
+                              new CPU_Tensor'
+                                 (Mlengine.Operators.Forward (G.all, X));
+                       end loop;
 
-                Loss := Loss_Fn.Forward(Data_Batch.Data.all, Target_Batch);
+                       Loss :=
+                          Loss_Fn.Forward
+                             (Data_Batch.Data.all, Target_Batch);
 
-              -- Backward pass
-                Grad.Data := new CPU_Tensor'(Loss_Fn.Backward);
-                for G of Reverse M.Graph loop
-                    Grad.Data := new CPU_Tensor'(G.all.Backward(Grad));
-                end loop;
+                       -- Backward pass
+                       Grad.Data := new CPU_Tensor'(Loss_Fn.Backward);
+                       for G of reverse M.Graph loop
+                           Grad.Data :=
+                              new CPU_Tensor'(G.all.Backward (Grad));
+                       end loop;
 
-                Optimizer.Step;
+                       Optimizer.Step;
 
-                Loss_History.Append(Loss);
-                Put_Line("Loss at epoch = " & Integer'Image(Epoch) & " and iteration = " & Integer'Image(Itr) & ": " & Float'Image(Float(Loss)));
+                       Loss_History.Append (Loss);
+                       Put_Line
+                          ("Loss at epoch = " & Integer'Image (Epoch) &
+                           " and iteration = " & Integer'Image (Itr) &
+                           ": " & Float'Image (Float (Loss)));
 
-                Itr := Itr + 1;
-                end;
+                       Itr := Itr + 1;
+                   end;
 
-                Starter := Starter + Batch_Size;
+               end;
 
-            end loop;
-        end loop;
-        
-    end Fit;
+               Starter := Starter + Batch_Size;
+
+           end loop;
+       end loop;
+
+   end Fit;
 
     --  function Predict(M : in out Model; Data : Tensor) return CPU_Tensor is
     --      X : Tensor := Data;

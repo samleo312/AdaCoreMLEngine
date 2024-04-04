@@ -27,10 +27,6 @@ package body Mlengine.Optimizers is
                 Wdp : CPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all;
                 Added : CPU_Tensor := Momv + Wdp;
             begin
-                --Put_Line(Momv.Image);
-                --Put_Line(Wdp.Image);
-                --Put_Line(Added.Image);
-                --Optim.velocities(I).Data.all := Added;
                 null;
             end;
             Optim.parameters (I).Data.all := Optim.parameters (I).Data.all - (Orka.Numerics.Singles.Tensors.Element(Optim.lr) * Optim.velocities (I).Data.all);

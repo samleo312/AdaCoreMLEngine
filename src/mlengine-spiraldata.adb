@@ -28,13 +28,13 @@ package body Mlengine.spiraldata is
          return Result;
       end Linspace;
 
-   procedure Generate_Spiral_Data (Points_Per_Class : Integer; Num_Classes : Integer; Data_Return : out CPU_Tensor; Target_Return : out Target_Array) is
+   function Generate_Spiral_Data (Points_Per_Class : Integer; Num_Classes : Integer; Target_Return : out Target_Array) return CPU_Tensor is
       -- Generate points along the radius of the spiral
       Data : ST_CPU.CPU_Tensor := ST_CPU.Zeros((Num_Classes*Points_Per_Class,2));
 
-      Target : Target_Array (1..(Num_Classes * Points_Per_Class)) := (others => 0);
+      --Target : Target_Array (1..(Num_Classes * Points_Per_Class)) := (others => 0);
 
-      R : Float_Array := Linspace (0.0, 1.0, 10);
+      R : Float_Array := Linspace (0.0, 1.0, Points_Per_Class);
 
       -- Calculate the angle between each class in radians
       Radians_Per_Class : constant Float := 2.0 * Pi / Float (Num_Classes);
@@ -63,11 +63,11 @@ package body Mlengine.spiraldata is
 
             -- Set target values for each class
             for J in 1 .. Points_Per_Class loop
-               Target(J + (I-1)* Points_Per_Class) := (I); -- needs to be an array of integers as defined in loss
+               Target_Return(J + (I-1)* Points_Per_Class) := (I); -- needs to be an array of integers as defined in loss
             end loop;
          end;
       end loop;
-   
+      return Data;
       --Put_Line(ST_CPU.Image(Data));
       --Put_Line(Target'Image);
       -- Perform any further processing or return the data and target arrays
