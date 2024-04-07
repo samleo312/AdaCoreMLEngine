@@ -1,6 +1,7 @@
 with Ada.Numerics;  
 --with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with Orka; use Orka; 
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Orka.Numerics.Singles.Tensors; use Orka.Numerics.Singles.Tensors;
 with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
 
@@ -16,27 +17,12 @@ package body Mlengine.LossFunctions is
       Maximums : Float_Array(1 .. SLM.Size) := (others => 0.0);
       Losses   : Float_Array(1 .. SLM.Size) := (others => 0.0);
       UP_Sums  : Float_Array(1 .. SLM.Size) := (others => 0.0);
-      Unnormalized_Proba : ST_CPU.CPU_Tensor := ST.CPU.To_Tensor((0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0,
-                                                                  0.0, 0.0, 0.0), 
-                                                                  (20,3));
+      Unnormalized_Proba : ST_CPU.CPU_Tensor := Zeros((X.Shape(1),3));
+
+      --  Maximums : Float_Array(1 .. SLM.Size) := (others => 0.0);
+      --  Losses   : Float_Array(1 .. SLM.Size) := (others => 0.0);
+      --  UP_Sums  : Float_Array(1 .. SLM.Size) := (others => 0.0);
+      --  Unnormalized_Proba : ST_CPU.CPU_Tensor := Zeros((SLM.Size,3));
       
       procedure Find_Rows_Max (Data : in ST_CPU.CPU_Tensor; 
                                Maxs : in out Float_Array) is
@@ -58,6 +44,9 @@ package body Mlengine.LossFunctions is
                                               Un_Prob : in out ST_CPU.CPU_Tensor) is
          package Real_Functions is new Ada.Numerics.Generic_Elementary_Functions (Orka.Float_32);
       begin
+         --  Put_Line ("Data " & Data.Shape(1)'Image & " " & Data.Shape(2)'Image);
+         --  Put_Line ("Data Tensor" & Data.Image);
+         --  Put_Line (30 * "*");
          for I in 1 .. (Data.Shape (1)) loop
             for J in 1 .. (Data.Shape (2)) loop
                declare
@@ -75,9 +64,17 @@ package body Mlengine.LossFunctions is
       procedure Sum_Unnormalized_Probabilities (Un_Prob : in ST_CPU.CPU_Tensor; 
                                                 Sums    : in out Float_Array) is
       begin
+         --  Put_Line ("Unprob " & Un_Prob.Shape(1)'Image & " " & Un_Prob.Shape(2)'Image);
+         --  Put_Line ("Unprob Tensor" & Un_Prob.Image);
+         --  Put_Line (30 * "*");
          for I in 1 .. Un_Prob.Shape (1) loop
             for J in 1 .. Un_Prob.Shape (2) loop
-              Sums (I) := (Sums (I) + Un_Prob.Get ((I, J)));
+              declare
+               E : Orka.Float_32 := Un_Prob.Get ((I, J));
+              begin
+                  Sums (I) := (Sums (I) + E);
+              end;
+            
             end loop;
          end loop;
       end;
@@ -86,13 +83,24 @@ package body Mlengine.LossFunctions is
                                          Sums    : in Float_Array; 
                                          Data    : in out ST_CPU.CPU_Tensor) is
       begin
+         --  Put_Line ("Unprob " & Un_Prob.Shape(1)'Image & " " & Un_Prob.Shape(2)'Image);
+
          for I in 1 .. Un_Prob.Shape (1) loop
             for J in 1 .. Un_Prob.Shape (2) loop
                declare
                   T_Idx : ST.Tensor_Index := (I, J);
-                  Normalization : Orka.Float_32 := Un_Prob.Get (T_Idx) / Sums(I);
                begin
-                  Data.Set (T_Idx, Normalization);
+                  --  Put_Line ("T_Idx " & T_Idx'Image);
+                  --  Put_Line ("Sums(I) " & Sums (I)'Image);
+
+                  declare
+                     Normalization : Orka.Float_32 :=
+                       Un_Prob.Get (T_Idx) / Sums (I);
+
+                  begin
+                     Data.Set (T_Idx, Normalization);
+
+                  end;
                end;
             end loop;
          end loop;
@@ -103,15 +111,20 @@ package body Mlengine.LossFunctions is
                                Data : in out ST_CPU.CPU_Tensor) is
       package Real_Functions is new Ada.Numerics.Generic_Elementary_Functions (Orka.Float_32);
       begin
-         for I in 1 .. 20 loop
+         for I in 1 .. SLM.Size loop
             declare
             J : Standard.Integer := Target(I);
             Element : Orka.Float_32 := Data.Get ((I, J));
-            Log_Of : Orka.Float_32 := Real_Functions.Log (Element, Ada.Numerics.e);
-            Negative_Log_Of : Orka.Float_32 := -(Log_Of);
             begin
-               Losses(I) := Negative_Log_Of;
-               Put_Line(Losses(I)'Image);
+               --Put_Line(Element'Image);
+               if Element > 0.0 then
+                  declare
+                  Log_Of : Orka.Float_32 := Real_Functions.Log (Element, Ada.Numerics.e);
+                  Negative_Log_Of : Orka.Float_32 := -(Log_Of);
+               begin
+                  Losses(I) := Negative_Log_Of;
+               end;
+               end if;
             end;
          end loop;
       end;
@@ -122,13 +135,14 @@ package body Mlengine.LossFunctions is
       Find_Rows_Max (X, Maximums);
       Compute_Rowwise_Exponentials (X, Maximums, Unnormalized_Proba);
       Sum_Unnormalized_Probabilities (Unnormalized_Proba, UP_Sums);
-      
+
       Normalize_Probabilities (Unnormalized_Proba, UP_Sums, SLM.Proba.Data.all);
-      Put_Line(SLM.Proba.Data.all.Image);
+      --Put_Line(SLM.Proba.Data.all.Image);
       Negative_Log (Target, SLM.Proba.Data.all);
+      
 
       --return
-      for I in 1 .. 20 loop
+      for I in 1 .. SLM.Size loop
             Losses_Sum := Losses(I) + Losses_Sum;
       end loop;
 
@@ -136,8 +150,8 @@ package body Mlengine.LossFunctions is
          Average_Losses : Orka.Float_32 := 0.0;
          begin
             Average_Losses := Losses_Sum / 20.0;
-         Put_Line("Loss mean");
-         Put_Line(Average_Losses'Image);
+         --  Put_Line("Loss mean");
+         --  Put_Line(Average_Losses'Image);
          return Average_Losses;
 
          end;
@@ -149,7 +163,7 @@ package body Mlengine.LossFunctions is
       Target : Integer;
    begin
 
-      for I in SLM.Target'Range loop
+      for I in 1 .. SLM.Target'Length loop
          Target := SLM.Target (I);
          declare
             Idx : ST.Tensor_Index := (I, Target);
@@ -173,7 +187,6 @@ package body Mlengine.LossFunctions is
             
          end loop;
       end loop;
-      Put_Line(Gradient.Data.all.Image);
       return Gradient.Data.all;
    end;
 end Mlengine.LossFunctions;

@@ -27,10 +27,6 @@ package body Mlengine.Optimizers is
                 Wdp : CPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all;
                 Added : CPU_Tensor := Momv + Wdp;
             begin
-                --Put_Line(Momv.Image);
-                --Put_Line(Wdp.Image);
-                --Put_Line(Added.Image);
-                --Optim.velocities(I).Data.all := Added;
                 null;
             end;
             Optim.parameters (I).Data.all := Optim.parameters (I).Data.all - (Orka.Numerics.Singles.Tensors.Element(Optim.lr) * Optim.velocities (I).Data.all);
@@ -40,8 +36,8 @@ package body Mlengine.Optimizers is
 
     overriding procedure zero_grad(Optim : in out SGD) is
     begin
-        for I in Optim.parameters.First_Index .. Optim.parameters.Last_Index loop
-            Optim.parameters(I).Grad.all := Zeros(Optim.parameters(I).Grad.Shape);
+        for I of Optim.parameters loop
+            I.Grad.all := Zeros(I.Grad.Shape);
         end loop;
     end zero_grad;
 

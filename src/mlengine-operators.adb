@@ -6,32 +6,29 @@ with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 
 package body Mlengine.Operators is
    
-   function SumOverX(T : ST_CPU.CPU_Tensor) return ST_CPU.CPU_Tensor is 
-      Result : ST_CPU.CPU_Tensor := ST_CPU.Empty((1,1));
-      Counter : Orka.Float_32;
-   begin
-      for I in 1 .. (T.Shape(1)) loop
-         Counter := 0.0;
-         if T.Shape'Length > 1 then
-            for J in 1 .. (T.Shape(2)) loop
-               Counter := Counter + ST_CPU.Get(T, (I, J));
-            end loop;   
-            declare 
-               Single : ST_CPU.CPU_Tensor := ST_CPU.Zeros((1,1));
-            begin 
-               Single.Set (((1,1)), Counter);
-               if I = 1 then
-                  ST_CPU.Set(Result, (1,1), Counter);
-               else
-                  Result := Result & Single;
-               end if; 
+      function SumOverX(T : ST_CPU.CPU_Tensor) return ST_CPU.CPU_Tensor is
+         Result : ST_CPU.CPU_Tensor := ST_CPU.Zeros((1, T.Shape(1)));
+      begin
+         if T.Shape(1) > 1 then
+            for I in 1 .. T.Shape(1) loop
+
+               declare
+                  Row_Sum : Float_32 := 0.0;
+               begin
                
-            end;
+               for J in 1 .. T.Shape(2) loop
+                  Row_Sum := Row_Sum + ST_CPU.Get(T, (I, J));
+               end loop;
+               ST_CPU.Set(Result, (1, I), Row_Sum);
+               end;
+            end loop;
+
+            return Result;
+         else
+            return T;
          end if;
-         
-      end loop;
-      return Result; 
-   end;
+      end SumOverX;
+
 
    procedure InitializeLayer(E : in out Linear_T) is
       G : Generator; 
@@ -48,17 +45,29 @@ package body Mlengine.Operators is
 
    -- Change to CPU_Tensor input
    overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
-      Output : ST_CPU.CPU_Tensor := Add((X.Data.all * E.Weights.Data.all), E.Bias.Data.all);
+
    begin
-      E.Input := X; 
-      return Output;
+
+      declare
+         Multi : ST_CPU.CPU_Tensor := X.Data.all * E.Weights.Data.all;
+         --Multi : ST_CPU.CPU_Tensor := E.Weights.Data.all * X.Data.all;
+         --Output : ST_CPU.CPU_Tensor := Add(Multi, E.Bias.Data.all);
+      begin
+         --Put_Line("-----BIAS----");
+         --Put_Line(E.Bias.Data.all.Image);
+         E.Input := X;
+         return Multi;
+      end;
+
    end;
 
    -- Change to CPU_Tensor Input
    overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
       GradInput : ST_CPU.CPU_Tensor := (dY.Data.all * Transpose(E.Weights.Data.all));
    begin
-      E.Weights.Grad := new ST_CPU.CPU_Tensor'(Add(E.Weights.Grad.all, (dY.Data.all * Transpose(E.Input.Data.all))));
+      E.Weights.Grad := new ST_CPU.CPU_Tensor'((Transpose(E.Input.Data.all)* dY.Data.all));
+      --Add(E.Weights.Grad.all, ... ) ^
+
       E.Bias.Grad := new ST_CPU.CPU_Tensor'(SumOverX(dY.Data.all));
       return GradInput;
    end;
@@ -129,6 +138,8 @@ package body Mlengine.Operators is
       overriding function Get_Params (E : ReLU_T) return ParamsArray is
          BlankArray : ParamsArray;
       begin
+         BlankArray (1) := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((2,2))), Grad => new CPU_Tensor'(ST_CPU.Zeros((2,2))));
+         BlankArray (2) := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((2,2))), Grad => new CPU_Tensor'(ST_CPU.Zeros((2,2))));
          return BlankArray;
       end; 
 
