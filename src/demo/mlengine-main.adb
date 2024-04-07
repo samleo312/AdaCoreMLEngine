@@ -26,7 +26,7 @@ procedure Main is
     Target : Mlengine.LossFunctions.Target_Array (1..(Num_Classes * Samples_Per_Class)) := (others => 1);
     Loss_Fn           : aliased Mlengine.LossFunctions.SoftLossMax_T := (Size => Batch_Size, Proba => Proba_Tensor, Target => Target_A);
 
-    Predicted_Labels  : CPU_Tensor := ST_CPU.Zeros((Samples_Per_Class, Num_Classes));
+    Predicted_Labels  : Tensor;
     Accuracy          : Float;
 
     use ST_CPU;
@@ -80,8 +80,8 @@ begin
 
     Fit(M, Data, Target, Batch_Size, Num_Epochs, Optim, Loss_Fn);
 
-    --  Predicted_Labels := Predict(M, Data);
-    --Accuracy := Calculate_Accuracy(Predicted_Labels, Target);
+    Predicted_Labels.Data := new CPU_Tensor'(Predict(M, Data));
+    Accuracy := Calculate_Accuracy(Predicted_Labels.Data.all, Target);
 
     Put_Line("Model Accuracy = " & Float'Image(Accuracy));
 

@@ -47,8 +47,8 @@ package body Mlengine.Utilities is
 
    begin
        InitializeNetwork (M);
-        Put_Line("Data Size" & Data.Data.all.Shape'Image);
-        Put_Line("Num Batchs " & Num_Batches'Image);
+        --Put_Line("Data Size" & Data.Data.all.Shape'Image);
+        --Put_Line("Num Batchs " & Num_Batches'Image);
 
        for Epoch in 1 .. Num_Epochs loop
            Starter := 1; 
@@ -130,20 +130,20 @@ package body Mlengine.Utilities is
 
    end Fit;
 
-    --  function Predict(M : in out Model; Data : Tensor) return CPU_Tensor is
-    --      X : Tensor := Data;
-    --  begin
-    --      for G of M.Graph loop
-    --          X.Data.all := G.all.Forward(X);
-    --      end loop;
-    --      return X.Data.all;
-    --  end Predict;
+    function Predict(M : in out Model; Data : Tensor) return CPU_Tensor is
+        X : Tensor := Data;
+    begin
+        for G of M.Graph loop
+            X.Data := new CPU_Tensor'(G.all.Forward(X));
+        end loop;
+        return X.Data.all;
+    end Predict;
 
     function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float is
         function ArgMax (Row : CPU_Tensor) return Natural is
             Max_Index : Integer := 1;
         begin
-            for I in 2 .. Row.Shape(2) loop
+            for I in 2 .. Row.Shape(1) loop
                 declare
                     Row_Value : Float_32 := Row(I);
                     Max_Value : Float_32 := Row(Max_Index);
@@ -167,7 +167,11 @@ package body Mlengine.Utilities is
         end loop;
 
         -- Calculate accuracy
-        Accuracy := Float(Correct_Predictions / TestTargets'Length);
+        Put_Line("Correct Predictions " & Correct_Predictions'Image);
+        Put_Line("Target Length " & TestTargets'Length'Image);
+
+        
+        Accuracy := (Float(Correct_Predictions) / Float(TestTargets'Length));
         return Accuracy;
     end Calculate_Accuracy;
 end Mlengine.Utilities;
