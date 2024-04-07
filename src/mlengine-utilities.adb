@@ -167,7 +167,7 @@ package body Mlengine.Utilities is
         end loop;
 
         -- Calculate accuracy
-        Put_Line("Correct Predictions " & Correct_Predictions'Image);
+        --Put_Line("Correct Predictions " & Correct_Predictions'Image);
         Put_Line("Target Length " & TestTargets'Length'Image);
 
         
