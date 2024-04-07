@@ -64,7 +64,7 @@ begin
     Data.Data := new CPU_Tensor'(Generate_Spiral_Data(Samples_Per_Class, Num_Classes, Target));
     Data.Grad := new CPU_Tensor'(Zeros(Data.Data.Shape));
     
-    Put_Line("Data " & Data.Data.all.Image);
+    --Put_Line("Data " & Data.Data.all.Image);
     InitializeNetwork(M);
 
     Add(M, Layer1);

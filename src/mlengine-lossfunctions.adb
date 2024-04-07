@@ -115,10 +115,16 @@ package body Mlengine.LossFunctions is
             declare
             J : Standard.Integer := Target(I);
             Element : Orka.Float_32 := Data.Get ((I, J));
-            Log_Of : Orka.Float_32 := Real_Functions.Log (Element, Ada.Numerics.e);
-            Negative_Log_Of : Orka.Float_32 := -(Log_Of);
             begin
-               Losses(I) := Negative_Log_Of;
+               --Put_Line(Element'Image);
+               if Element > 0.0 then
+                  declare
+                  Log_Of : Orka.Float_32 := Real_Functions.Log (Element, Ada.Numerics.e);
+                  Negative_Log_Of : Orka.Float_32 := -(Log_Of);
+               begin
+                  Losses(I) := Negative_Log_Of;
+               end;
+               end if;
             end;
          end loop;
       end;
