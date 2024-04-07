@@ -168,7 +168,7 @@ package body Mlengine.Utilities is
 
         -- Calculate accuracy
         --Put_Line("Correct Predictions " & Correct_Predictions'Image);
-        Put_Line("Target Length " & TestTargets'Length'Image);
+        --Put_Line("Target Length " & TestTargets'Length'Image);
 
         
         Accuracy := (Float(Correct_Predictions) / Float(TestTargets'Length));
