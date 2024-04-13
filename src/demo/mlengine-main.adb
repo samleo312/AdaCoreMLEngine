@@ -68,7 +68,7 @@ begin
     InitializeNetwork(M);
 
     Add(M, Layer1);
-    --Add(M, ReLU_Object); -- SHOULD NOT ADD ANYTHING TO MODEL PARAMS! NEEDS FIXED
+    Add(M, ReLU_Object); --RELU is breaking because the activated tensor is not initialized to anything above. Initialize it to fix.
     Add(M, Layer2);
 
     Optim.Parameters := M.Parameters;

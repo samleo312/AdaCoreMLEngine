@@ -122,7 +122,7 @@ package body Mlengine.Operators is
                --return dY * 1.0 or 0.0
                --these are True and False values of if activated is greater than 0
                if cur <= 0.0 then
-                  dY.Grad.Set (((I,J)), 0.0);
+                  dY.Data.Set (((I,J)), 0.0);
                end if;
 
             end loop;
@@ -130,7 +130,7 @@ package body Mlengine.Operators is
          end loop;
 
          --return modified dy gradient tensor
-         return dY.Grad.All;
+         return dY.Data.All;
       
       
       end;
