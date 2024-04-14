@@ -15,7 +15,7 @@ procedure Main is
     Num_Epochs        : constant Integer := 100;
     Samples_Per_Class : constant Integer := 100;
     Num_Classes       : constant Integer := 3;
-    Hidden_Units      : constant Integer := 100;
+    Hidden_Units      : constant Integer := 1000;
 
     Data              : Tensor;-- := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((Samples_Per_Class, 2))), Grad => new CPU_Tensor'(ST_CPU.Zeros((Samples_Per_Class * Num_Classes, 2))));
     Target_A            : LossFunctions.Target_Array(1 .. Batch_Size) := (others => 1);
@@ -64,11 +64,10 @@ begin
     Data.Data := new CPU_Tensor'(Generate_Spiral_Data(Samples_Per_Class, Num_Classes, Target));
     Data.Grad := new CPU_Tensor'(Zeros(Data.Data.Shape));
     
-    --Put_Line("Data " & Data.Data.all.Image);
     InitializeNetwork(M);
 
     Add(M, Layer1);
-    Add(M, ReLU_Object); --RELU is breaking because the activated tensor is not initialized to anything above. Initialize it to fix.
+    Add(M, ReLU_Object);
     Add(M, Layer2);
 
     Optim.Parameters := M.Parameters;

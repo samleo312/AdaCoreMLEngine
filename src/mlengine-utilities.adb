@@ -102,7 +102,6 @@ package body Mlengine.Utilities is
                        Loss :=
                           Loss_Fn.Forward
                              (Data_Batch.Data.all, Target_Batch);
-
                        -- Backward pass
                        Grad.Data := new CPU_Tensor'(Loss_Fn.Backward);
                        for G of reverse M.Graph loop
