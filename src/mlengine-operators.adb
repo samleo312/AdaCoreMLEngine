@@ -1,13 +1,13 @@
 with Ada.Text_IO; use Ada.Text_IO;
 with Orka; use Orka; 
-with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.GPU; use Orka.Numerics.Singles.Tensors.GPU;
 with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 
 
 package body Mlengine.Operators is
    
-      function SumOverX(T : ST_CPU.CPU_Tensor) return ST_CPU.CPU_Tensor is
-         Result : ST_CPU.CPU_Tensor := ST_CPU.Zeros((1, T.Shape(1)));
+      function SumOverX(T : ST_GPU.GPU_Tensor) return ST_GPU.GPU_Tensor is
+         Result : ST_GPU.GPU_Tensor := ST_GPU.Zeros((1, T.Shape(1)));
       begin
          if T.Shape(1) > 1 then
             for I in 1 .. T.Shape(1) loop
@@ -17,9 +17,9 @@ package body Mlengine.Operators is
                begin
                
                for J in 1 .. T.Shape(2) loop
-                  Row_Sum := Row_Sum + ST_CPU.Get(T, (I, J));
+                  Row_Sum := Row_Sum + ST_GPU.Get(T, (I, J));
                end loop;
-               ST_CPU.Set(Result, (1, I), Row_Sum);
+               ST_GPU.Set(Result, (1, I), Row_Sum);
                end;
             end loop;
 
@@ -43,15 +43,15 @@ package body Mlengine.Operators is
    end;
 
 
-   -- Change to CPU_Tensor input
-   overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_CPU.CPU_Tensor is
+   -- Change to GPU_Tensor input
+   overriding function Forward (E : in out Linear_T; X : in Tensor) return ST_GPU.GPU_Tensor is
 
    begin
 
       declare
-         Multi : ST_CPU.CPU_Tensor := X.Data.all * E.Weights.Data.all;
-         --Multi : ST_CPU.CPU_Tensor := E.Weights.Data.all * X.Data.all;
-         --Output : ST_CPU.CPU_Tensor := Add(Multi, E.Bias.Data.all);
+         Multi : ST_GPU.GPU_Tensor := X.Data.all * E.Weights.Data.all;
+         --Multi : ST_GPU.GPU_Tensor := E.Weights.Data.all * X.Data.all;
+         --Output : ST_GPU.GPU_Tensor := Add(Multi, E.Bias.Data.all);
       begin
          --Put_Line("-----BIAS----");
          --Put_Line(E.Bias.Data.all.Image);
@@ -61,14 +61,14 @@ package body Mlengine.Operators is
 
    end;
 
-   -- Change to CPU_Tensor Input
-   overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
-      GradInput : ST_CPU.CPU_Tensor := (dY.Data.all * Transpose(E.Weights.Data.all));
+   -- Change to GPU_Tensor Input
+   overriding function Backward (E : in out Linear_T; dY : in Tensor) return ST_GPU.GPU_Tensor is
+      GradInput : ST_GPU.GPU_Tensor := (dY.Data.all * Transpose(E.Weights.Data.all));
    begin
-      E.Weights.Grad := new ST_CPU.CPU_Tensor'((Transpose(E.Input.Data.all)* dY.Data.all));
+      E.Weights.Grad := new ST_GPU.GPU_Tensor'((Transpose(E.Input.Data.all)* dY.Data.all));
       --Add(E.Weights.Grad.all, ... ) ^
 
-      E.Bias.Grad := new ST_CPU.CPU_Tensor'(SumOverX(dY.Data.all));
+      E.Bias.Grad := new ST_GPU.GPU_Tensor'(SumOverX(dY.Data.all));
       return GradInput;
    end;
 
@@ -81,7 +81,7 @@ package body Mlengine.Operators is
    end;
    
 
-   overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_CPU.CPU_Tensor is
+   overriding function Forward (E : in out ReLU_T; X : in Tensor) return ST_GPU.GPU_Tensor is
       --current var
       cur : Orka.Float_32;
       begin
@@ -109,7 +109,7 @@ package body Mlengine.Operators is
       end;
 
 
-      overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_CPU.CPU_Tensor is
+      overriding function Backward (E : in out ReLU_T; dY : in Tensor) return ST_GPU.GPU_Tensor is
       --current var
       cur : Orka.Float_32;
       begin
@@ -138,8 +138,8 @@ package body Mlengine.Operators is
       overriding function Get_Params (E : ReLU_T) return ParamsArray is
          BlankArray : ParamsArray;
       begin
-         BlankArray (1) := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((2,2))), Grad => new CPU_Tensor'(ST_CPU.Zeros((2,2))));
-         BlankArray (2) := Tensor'(Data => new CPU_Tensor'(ST_CPU.Zeros((2,2))), Grad => new CPU_Tensor'(ST_CPU.Zeros((2,2))));
+         BlankArray (1) := Tensor'(Data => new GPU_Tensor'(ST_GPU.Zeros((2,2))), Grad => new GPU_Tensor'(ST_GPU.Zeros((2,2))));
+         BlankArray (2) := Tensor'(Data => new GPU_Tensor'(ST_GPU.Zeros((2,2))), Grad => new GPU_Tensor'(ST_GPU.Zeros((2,2))));
          return BlankArray;
       end; 
 

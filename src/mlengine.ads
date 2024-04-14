@@ -1,12 +1,12 @@
 with Orka.Numerics.Singles.Tensors;
-with Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.GPU;
 
 package Mlengine is
 
     package ST renames Orka.Numerics.Singles.Tensors;
-    package ST_CPU renames Orka.Numerics.Singles.Tensors.CPU;
+    package ST_GPU renames Orka.Numerics.Singles.Tensors.GPU;
 
-    type Tensor_Access is access ST_CPU.CPU_Tensor; 
+    type Tensor_Access is access ST_GPU.GPU_Tensor; 
 
     type Tensor is record
         Data : Tensor_Access;

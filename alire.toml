@@ -7,7 +7,7 @@ maintainers = ["Samuel Leonetti <samleo312@gmail.com>"]
 maintainers-logins = ["samleo312"]
 executables = ["mlengine-main"]
 [[depends-on]]
-orka_tensors_cpu = "~1.0.0"
+orka_tensors_GPU = "~1.0.0"
 
 [build-switches]
 "*".style_checks = "No"

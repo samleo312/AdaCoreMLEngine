@@ -1,6 +1,6 @@
 with Mlengine; use Mlengine;
 with Mlengine.Operators; use Mlengine.Operators;
-with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.GPU; use Orka.Numerics.Singles.Tensors.GPU;
 with Ada.Containers.Vectors;
 
 package Mlengine.Optimizers is

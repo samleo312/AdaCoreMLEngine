@@ -58,7 +58,7 @@ package body Mlengine.Utilities is
                    B : Integer := Starter;
                    E : Integer := Batch_Size * I;
 
-                   D : CPU_Tensor := Data.Data.all;
+                   D : GPU_Tensor := Data.Data.all;
 
                begin
                 --  Put_Line("Epoch " & Epoch'Image);
@@ -71,13 +71,13 @@ package body Mlengine.Utilities is
                        Data_Batch   : Tensor :=
                           Tensor'
                              (Data =>
-                                 new CPU_Tensor'
+                                 new GPU_Tensor'
                                     (Data.Data.all.Get
                                         (Range_Type'
                                             (Start => Starter,
                                            Stop    => (Batch_Size * I)))),
                               Grad =>
-                                 new CPU_Tensor'
+                                 new GPU_Tensor'
                                     (Data.Grad.all.Get
                                         (Range_Type'
                                             (Start => Starter,
@@ -95,7 +95,7 @@ package body Mlengine.Utilities is
 
                        for G of M.Graph loop
                            X.Data :=
-                              new CPU_Tensor'
+                              new GPU_Tensor'
                                  (Mlengine.Operators.Forward (G.all, X));
                        end loop;
 
@@ -104,10 +104,10 @@ package body Mlengine.Utilities is
                              (Data_Batch.Data.all, Target_Batch);
 
                        -- Backward pass
-                       Grad.Data := new CPU_Tensor'(Loss_Fn.Backward);
+                       Grad.Data := new GPU_Tensor'(Loss_Fn.Backward);
                        for G of reverse M.Graph loop
                            Grad.Data :=
-                              new CPU_Tensor'(G.all.Backward (Grad));
+                              new GPU_Tensor'(G.all.Backward (Grad));
                        end loop;
 
                        Optimizer.Step;
@@ -130,17 +130,17 @@ package body Mlengine.Utilities is
 
    end Fit;
 
-    function Predict(M : in out Model; Data : Tensor) return CPU_Tensor is
+    function Predict(M : in out Model; Data : Tensor) return GPU_Tensor is
         X : Tensor := Data;
     begin
         for G of M.Graph loop
-            X.Data := new CPU_Tensor'(G.all.Forward(X));
+            X.Data := new GPU_Tensor'(G.all.Forward(X));
         end loop;
         return X.Data.all;
     end Predict;
 
-    function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float is
-        function ArgMax (Row : CPU_Tensor) return Natural is
+    function Calculate_Accuracy(Predicted : GPU_Tensor; TestTargets : Target_Array) return Float is
+        function ArgMax (Row : GPU_Tensor) return Natural is
             Max_Index : Integer := 1;
         begin
             for I in 2 .. Row.Shape(1) loop

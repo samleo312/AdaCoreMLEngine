@@ -5,7 +5,7 @@ with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 with Generate_Gaussian_Random;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with Mlengine.LossFunctions; use Mlengine.LossFunctions;
-with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.GPU; use Orka.Numerics.Singles.Tensors.GPU;
 
 
 package body Mlengine.spiraldata is
@@ -28,9 +28,9 @@ package body Mlengine.spiraldata is
          return Result;
       end Linspace;
 
-   function Generate_Spiral_Data (Points_Per_Class : Integer; Num_Classes : Integer; Target_Return : out Target_Array) return CPU_Tensor is
+   function Generate_Spiral_Data (Points_Per_Class : Integer; Num_Classes : Integer; Target_Return : out Target_Array) return GPU_Tensor is
       -- Generate points along the radius of the spiral
-      Data : ST_CPU.CPU_Tensor := ST_CPU.Zeros((Num_Classes*Points_Per_Class,2));
+      Data : ST_GPU.GPU_Tensor := ST_GPU.Zeros((Num_Classes*Points_Per_Class,2));
 
       --Target : Target_Array (1..(Num_Classes * Points_Per_Class)) := (others => 0);
 
@@ -68,7 +68,7 @@ package body Mlengine.spiraldata is
          end;
       end loop;
       return Data;
-      --Put_Line(ST_CPU.Image(Data));
+      --Put_Line(ST_GPU.Image(Data));
       --Put_Line(Target'Image);
       -- Perform any further processing or return the data and target arrays
    end Generate_Spiral_Data;

@@ -3,28 +3,28 @@ with Ada.Numerics;
 with Orka; use Orka; 
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Orka.Numerics.Singles.Tensors; use Orka.Numerics.Singles.Tensors;
-with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.GPU; use Orka.Numerics.Singles.Tensors.GPU;
 
 with Ada.Numerics.Generic_Elementary_Functions;
 
 package body Mlengine.LossFunctions is
 
    function Forward (SLM    : in out SoftLossMax_T; 
-                     X      : in out ST_CPU.CPU_Tensor; 
+                     X      : in out ST_GPU.GPU_Tensor; 
                      Target : in out Target_Array) return Orka.Float_32 is
 
       Losses_Sum : Orka.Float_32 := 0.0;
       Maximums : Float_Array(1 .. SLM.Size) := (others => 0.0);
       Losses   : Float_Array(1 .. SLM.Size) := (others => 0.0);
       UP_Sums  : Float_Array(1 .. SLM.Size) := (others => 0.0);
-      Unnormalized_Proba : ST_CPU.CPU_Tensor := Zeros((X.Shape(1),3));
+      Unnormalized_Proba : ST_GPU.GPU_Tensor := Zeros((X.Shape(1),3));
 
       --  Maximums : Float_Array(1 .. SLM.Size) := (others => 0.0);
       --  Losses   : Float_Array(1 .. SLM.Size) := (others => 0.0);
       --  UP_Sums  : Float_Array(1 .. SLM.Size) := (others => 0.0);
-      --  Unnormalized_Proba : ST_CPU.CPU_Tensor := Zeros((SLM.Size,3));
+      --  Unnormalized_Proba : ST_GPU.GPU_Tensor := Zeros((SLM.Size,3));
       
-      procedure Find_Rows_Max (Data : in ST_CPU.CPU_Tensor; 
+      procedure Find_Rows_Max (Data : in ST_GPU.GPU_Tensor; 
                                Maxs : in out Float_Array) is
          Max         : Orka.Float_32 := 0.0;
          Element     : Orka.Float_32 := 0.0;
@@ -39,9 +39,9 @@ package body Mlengine.LossFunctions is
          end loop;
       end;
 
-      procedure Compute_Rowwise_Exponentials (Data    : in ST_CPU.CPU_Tensor; 
+      procedure Compute_Rowwise_Exponentials (Data    : in ST_GPU.GPU_Tensor; 
                                               Maxs    : in Float_Array; 
-                                              Un_Prob : in out ST_CPU.CPU_Tensor) is
+                                              Un_Prob : in out ST_GPU.GPU_Tensor) is
          package Real_Functions is new Ada.Numerics.Generic_Elementary_Functions (Orka.Float_32);
       begin
          --  Put_Line ("Data " & Data.Shape(1)'Image & " " & Data.Shape(2)'Image);
@@ -61,7 +61,7 @@ package body Mlengine.LossFunctions is
          end loop;
       end;
 
-      procedure Sum_Unnormalized_Probabilities (Un_Prob : in ST_CPU.CPU_Tensor; 
+      procedure Sum_Unnormalized_Probabilities (Un_Prob : in ST_GPU.GPU_Tensor; 
                                                 Sums    : in out Float_Array) is
       begin
          --  Put_Line ("Unprob " & Un_Prob.Shape(1)'Image & " " & Un_Prob.Shape(2)'Image);
@@ -79,9 +79,9 @@ package body Mlengine.LossFunctions is
          end loop;
       end;
 
-      procedure Normalize_Probabilities (Un_Prob : in ST_CPU.CPU_Tensor; 
+      procedure Normalize_Probabilities (Un_Prob : in ST_GPU.GPU_Tensor; 
                                          Sums    : in Float_Array; 
-                                         Data    : in out ST_CPU.CPU_Tensor) is
+                                         Data    : in out ST_GPU.GPU_Tensor) is
       begin
          --  Put_Line ("Unprob " & Un_Prob.Shape(1)'Image & " " & Un_Prob.Shape(2)'Image);
 
@@ -108,7 +108,7 @@ package body Mlengine.LossFunctions is
       end;
 
       procedure Negative_Log  (Target: in Target_Array;
-                               Data : in out ST_CPU.CPU_Tensor) is
+                               Data : in out ST_GPU.GPU_Tensor) is
       package Real_Functions is new Ada.Numerics.Generic_Elementary_Functions (Orka.Float_32);
       begin
          for I in 1 .. SLM.Size loop
@@ -158,7 +158,7 @@ package body Mlengine.LossFunctions is
 
    end Forward;
 
-   function Backward (SLM : in out SoftLossMax_T) return ST_CPU.CPU_Tensor is 
+   function Backward (SLM : in out SoftLossMax_T) return ST_GPU.GPU_Tensor is 
       Gradient : Tensor := SLM.Proba;
       Target : Integer;
    begin

@@ -15,8 +15,8 @@ package Mlengine.LossFunctions is
    type Func_Access_T is access all Func_T'Class;
 
    function Forward (SLM    : in out SoftLossMax_T; 
-                     X      : in out ST_CPU.CPU_Tensor; 
+                     X      : in out ST_GPU.GPU_Tensor; 
                      Target : in out Target_Array) return Orka.Float_32;
 
-   function Backward (SLM : in out SoftLossMax_T) return ST_CPU.CPU_Tensor;
+   function Backward (SLM : in out SoftLossMax_T) return ST_GPU.GPU_Tensor;
 end Mlengine.LossFunctions;

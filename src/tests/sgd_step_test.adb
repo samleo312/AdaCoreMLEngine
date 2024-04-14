@@ -1,6 +1,6 @@
 with AUnit.Assertions;                  use AUnit.Assertions;
 with Mlengine.Optimizers;               use Mlengine.Optimizers;
-with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.GPU; use Orka.Numerics.Singles.Tensors.GPU;
 with Mlengine;                          use Mlengine;
 with Ada.Text_IO;                       use Ada.Text_IO;
 with Orka;                              use Orka;
@@ -31,11 +31,11 @@ package body SGD_Step_Test is
 
         --Test_SGD's tensor
         test_ten.data :=
-           new ST_CPU.CPU_Tensor'
-              (ST_CPU.To_Tensor ((0.0, 1.0, 2.0, 3.0), (4, 1)));
+           new ST_GPU.GPU_Tensor'
+              (ST_GPU.To_Tensor ((0.0, 1.0, 2.0, 3.0), (4, 1)));
         test_ten.grad :=
-           new ST_CPU.CPU_Tensor'
-              (ST_CPU.To_Tensor ((0.0, 1.5, 2.5, 3.5), (4, 1)));
+           new ST_GPU.GPU_Tensor'
+              (ST_GPU.To_Tensor ((0.0, 1.5, 2.5, 3.5), (4, 1)));
 
         -- instantiate Test_SGD "S"
         declare

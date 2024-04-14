@@ -1,7 +1,7 @@
 with Mlengine.Operators; use Mlengine.Operators;
 with Mlengine.Optimizers; use Mlengine.Optimizers;
 with Mlengine.LossFunctions; use Mlengine.LossFunctions;
-with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
+with Orka.Numerics.Singles.Tensors.GPU; use Orka.Numerics.Singles.Tensors.GPU;
 with Ada.Containers;
 with Ada.Containers.Vectors;
 with Orka; use Orka;
@@ -37,8 +37,8 @@ package Mlengine.Utilities is
   procedure InitializeNetwork(M : in out Model);
   procedure Fit(M : in out Model; Data : Tensor; Target : Target_Array; Batch_Size : Integer; Num_Epochs : Integer; Optimizer : in out Optimizers.SGD; Loss_Fn : in out LossFunctions.SoftLossMax_T);
   
-  function Predict(M : in out Model; Data : Tensor) return CPU_Tensor;
-  function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float;
+  function Predict(M : in out Model; Data : Tensor) return GPU_Tensor;
+  function Calculate_Accuracy(Predicted : GPU_Tensor; TestTargets : Target_Array) return Float;
    
 
 end Mlengine.Utilities;

@@ -12,8 +12,8 @@ package body Mlengine.Optimizers is
         Velocity : Tensor;
     begin
         for I in Optim.parameters.First_Index .. Optim.parameters.Last_Index loop
-            Velocity.Data := new ST_CPU.CPU_Tensor'(Zeros((Optim.parameters (I).Grad.Shape(1), Optim.parameters (I).Grad.Shape(2))));
-            Velocity.Grad := new ST_CPU.CPU_Tensor'(Zeros((2,2)));
+            Velocity.Data := new ST_GPU.GPU_Tensor'(Zeros((Optim.parameters (I).Grad.Shape(1), Optim.parameters (I).Grad.Shape(2))));
+            Velocity.Grad := new ST_GPU.GPU_Tensor'(Zeros((2,2)));
             Optim.velocities.Append(Velocity);
         end loop;
     end;
@@ -23,9 +23,9 @@ package body Mlengine.Optimizers is
         for I in Optim.parameters.First_Index .. Optim.parameters.Last_Index loop
             Optim.velocities (I).Data.all := ((Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all) + Optim.parameters (I).Grad.all) + (Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all);
             declare
-                Momv : CPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all;
-                Wdp : CPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all;
-                Added : CPU_Tensor := Momv + Wdp;
+                Momv : GPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.momentum) * Optim.velocities (I).Data.all;
+                Wdp : GPU_Tensor := Orka.Numerics.Singles.Tensors.Element(Optim.weight_decay) * Optim.parameters (I).Data.all;
+                Added : GPU_Tensor := Momv + Wdp;
             begin
                 null;
             end;
