@@ -12,10 +12,16 @@ package Mlengine.Optimizers is
     package Tensor_Vector is new
      Ada.Containers.Vectors
        (Index_Type   => Natural,
-        Element_Type => Tensor);
+        Element_Type => Tensor_Access);
 
    use Tensor_Vector;
 
+   type Tensor_Vector_Access is access all Tensor_Vector.Vector;
+
+   package Velocity_Vector is new
+     Ada.Containers.Vectors
+       (Index_Type   => Natural,
+        Element_Type => Tensor);
 
     -- procedure to adjust values of params and velocities for an adjustment towards optimal solution
     ----------------procedure step (paramsGrad: in out Float_Array, paramsData in out Float_Array, velocity: in out Float_Array);
@@ -33,11 +39,12 @@ package Mlengine.Optimizers is
     -- velocities: array storing the changes in params, all values begin as 0 (Float_Array)
     type SGD is new Opt with record
         lr, weight_decay, momentum : Float;
-        velocities : Tensor_Vector.Vector;
-        parameters : Tensor_Vector.Vector;
+        velocities : Velocity_Vector.Vector;
+        parameters : Tensor_Vector_Access;
     end record; 
 
-    procedure InitializeSGD(Optim : in out SGD);
+   procedure InitializeSGD(Optim : in out SGD);
+   procedure FreeSGD (Optim : in out SGD);
     overriding procedure step (Optim : in out SGD);
     overriding procedure zero_grad (Optim: in out SGD); 
 

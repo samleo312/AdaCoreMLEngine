@@ -25,7 +25,7 @@ package Mlengine.Utilities is
 
    type Model is record
       Graph : Layer_Vector.Vector;
-      Parameters : Tensor_Vector.Vector;
+      Parameters : aliased Tensor_Vector.Vector;
    end record;
 
   type Batch_Result (Batch_Size : Integer) is record

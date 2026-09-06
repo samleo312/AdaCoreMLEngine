@@ -1,174 +1,186 @@
 with Ada.Text_IO; use Ada.Text_IO;
-with Mlengine.Operators;
-with Mlengine.Optimizers;
-with Mlengine.LossFunctions; use Mlengine.LossFunctions;
-with Orka; use Orka;
-with Orka.Numerics.Singles.Tensors; use Orka.Numerics.Singles.Tensors;
-with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
-with Ada.Numerics; use Ada.Numerics;
-with Ada.Numerics.Generic_Elementary_Functions;
-
-
+with Ada.Numerics.Discrete_Random;
 
 package body Mlengine.Utilities is
+   package Storage_Vector is new Ada.Containers.Vectors
+     (Index_Type => Natural, Element_Type => CPU_Tensor_Access);
 
-    procedure Add(M : in out Model; Layer: Mlengine.Operators.Func_Access_T) is
-        Params : ParamsArray := Layer.Get_Params;
-    begin
-        M.Graph.Append(Layer);
-        
-        M.Parameters.Append(Params (1));
-        M.Parameters.Append(Params (2));
-    end;
+   procedure Release (Storage : in out Storage_Vector.Vector) is
+   begin
+      for P of Storage loop
+         Free_CPU_Tensor (P);
+      end loop;
+      Storage.Clear;
+   end Release;
 
-    procedure InitializeNetwork(M : in out Model) is
-    begin
-        for G of M.Graph loop
-            G.all.InitializeLayer;
-        end loop; 
-    end;
+   procedure Add (M : in out Model; Layer : Mlengine.Operators.Func_Access_T) is
+      Params : constant ParamsArray := Layer.Get_Params;
+   begin
+      M.Graph.Append (Layer);
+      for P of Params loop
+         if P /= null then
+            M.Parameters.Append (P);
+         end if;
+      end loop;
+   end Add;
 
+   procedure InitializeNetwork (M : in out Model) is
+   begin
+      for G of M.Graph loop
+         G.all.InitializeLayer;
+      end loop;
+   end InitializeNetwork;
 
    procedure Fit
-      (M          : in out Model; Data : Tensor; Target : Target_Array;
-       Batch_Size :        Integer; Num_Epochs : Integer;
-       Optimizer  : in out Optimizers.SGD;
-       Loss_Fn    : in out LossFunctions.SoftLossMax_T)
+     (M : in out Model; Data : Tensor; Target : Target_Array;
+      Batch_Size : Integer; Num_Epochs : Integer;
+      Optimizer : in out Optimizers.SGD;
+      Loss_Fn : in out LossFunctions.SoftLossMax_T)
    is
-       Loss_History : Float32_Vector.Vector;
-
-       Num_Batches : Integer := (Data.Data.Shape (1) / Batch_Size);
-       Counter     : Integer := 0;
-
-       Loss    : Float_32;
-       Grad    : Tensor;
-       Itr     : Integer := 0;
-       Starter : Integer := 1;
-
+      N : constant Positive := Data.Data.Shape (1);
+      Order : array (1 .. N) of Positive;
+      package Random_Indices is new Ada.Numerics.Discrete_Random (Positive);
+      Generator : Random_Indices.Generator;
    begin
-       InitializeNetwork (M);
-        --Put_Line("Data Size" & Data.Data.all.Shape'Image);
-        --Put_Line("Num Batchs " & Num_Batches'Image);
-
-       for Epoch in 1 .. Num_Epochs loop
-           Starter := 1; 
-           for I in 1 .. Num_Batches loop
+      if Batch_Size < 1 or Target'Length /= N then
+         raise Constraint_Error with "Invalid training batch size or targets";
+      end if;
+      Random_Indices.Reset (Generator, 12345);
+      for I in Order'Range loop
+         Order (I) := I;
+      end loop;
+      InitializeNetwork (M);
+      -- A new fit starts both parameters and momentum afresh.
+      InitializeSGD (Optimizer);
+      for Epoch in 1 .. Num_Epochs loop
+         for I in reverse 2 .. N loop
+            declare
+               J : constant Positive := Random_Indices.Random (Generator, 1, I);
+               Saved : constant Positive := Order (I);
+            begin
+               Order (I) := Order (J);
+               Order (J) := Saved;
+            end;
+         end loop;
+         declare
+            Start : Positive := 1;
+            Epoch_Loss : Float_32 := 0.0;
+         begin
+            while Start <= N loop
                declare
-                   --needs to be first 20, 15 times;
-                   B : Integer := Starter;
-                   E : Integer := Batch_Size * I;
-
-                   D : CPU_Tensor := Data.Data.all;
-
+                  Count : constant Positive := Integer'Min (Batch_Size, N - Start + 1);
+                  Batch : Tensor :=
+                    (Data => new CPU_Tensor'(Zeros ((Count, Data.Data.Shape (2)))),
+                     Grad => null);
+                  Labels : Target_Array (1 .. Count);
+                  Local_Loss : SoftLossMax_T (Count);
+                  Storage : Storage_Vector.Vector;
+                  X : Tensor := Batch;
+                  Grad : Tensor;
+                  Loss : Float_32;
                begin
-                --  Put_Line("Epoch " & Epoch'Image);
-                --  Put_Line("Batch " & I'Image);
-                --  Put_Line("B " & B'Image);
-                --  Put_Line("E " & E'Image);
-                --  Put_Line("D " & D.Shape(1)'Image & " " & D.Shape(2)'Image);
-                
-                   declare
-                       Data_Batch   : Tensor :=
-                          Tensor'
-                             (Data =>
-                                 new CPU_Tensor'
-                                    (Data.Data.all.Get
-                                        (Range_Type'
-                                            (Start => Starter,
-                                           Stop    => (Batch_Size * I)))),
-                              Grad =>
-                                 new CPU_Tensor'
-                                    (Data.Grad.all.Get
-                                        (Range_Type'
-                                            (Start => Starter,
-                                              Stop => (Batch_Size * I)))));
-                       Target_Batch :
-                          Mlengine.LossFunctions.Target_Array
-                             (1 .. Batch_Size) :=
-                          Target (Starter .. (Batch_Size * I));
-                       X            : Tensor := Data_Batch;
-                   begin
-                       Optimizer.Zero_Grad;
-
-                       -- Forward pass
-                       --x y in datagen, x is 20x2 tensor, assuming coords, y is 20x1 target array
-
-                       for G of M.Graph loop
-                           X.Data :=
-                              new CPU_Tensor'
-                                 (Mlengine.Operators.Forward (G.all, X));
-                       end loop;
-
-                       Loss :=
-                          Loss_Fn.Forward
-                             (Data_Batch.Data.all, Target_Batch);
-                       -- Backward pass
-                       Grad.Data := new CPU_Tensor'(Loss_Fn.Backward);
-                       for G of reverse M.Graph loop
-                           Grad.Data :=
-                              new CPU_Tensor'(G.all.Backward (Grad));
-                       end loop;
-
-                       Optimizer.Step;
-
-                       Loss_History.Append (Loss);
-                       Put_Line
-                          ("Loss at epoch = " & Integer'Image (Epoch) &
-                           " and iteration = " & Integer'Image (Itr) &
-                           ": " & Float'Image (Float (Loss)));
-
-                       Itr := Itr + 1;
-                   end;
-
+                  for I in 1 .. Count loop
+                     Labels (I) := Target (Target'First + Order (Start + I - 1) - 1);
+                     for J in 1 .. Data.Data.Shape (2) loop
+                        declare
+                           Value : constant Float_32 := Data.Data.all.Get
+                             (ST.Tensor_Index'(Order (Start + I - 1), J));
+                        begin
+                           Batch.Data.Set (ST.Tensor_Index'(I, J), Value);
+                        end;
+                     end loop;
+                  end loop;
+                  Optimizer.Zero_Grad;
+                  for G of M.Graph loop
+                     declare
+                        Y : constant CPU_Tensor := G.all.Forward (X);
+                     begin
+                        X.Data := new CPU_Tensor'(Y);
+                        Storage.Append (X.Data);
+                     end;
+                  end loop;
+                  -- The final partial batch has its own correctly sized loss.
+                  if Count = Loss_Fn.Size then
+                     Loss := Loss_Fn.Forward (X.Data.all, Labels);
+                     Grad.Data := new CPU_Tensor'(Loss_Fn.Backward);
+                  else
+                     Loss := Local_Loss.Forward (X.Data.all, Labels);
+                     Grad.Data := new CPU_Tensor'(Local_Loss.Backward);
+                  end if;
+                  Storage.Append (Grad.Data);
+                  for G of reverse M.Graph loop
+                     declare
+                        D : constant CPU_Tensor := G.all.Backward (Grad);
+                     begin
+                        Grad.Data := new CPU_Tensor'(D);
+                        Storage.Append (Grad.Data);
+                     end;
+                  end loop;
+                  Optimizer.Step;
+                  Epoch_Loss := Epoch_Loss + Float_32 (Count) * Loss;
+                  Release (Storage);
+                  Free_Tensor (Batch);
+                  Free_Tensor (Local_Loss.Proba);
+               exception
+                  when others =>
+                     Release (Storage);
+                     Free_Tensor (Batch);
+                     Free_Tensor (Local_Loss.Proba);
+                     raise;
                end;
-
-               Starter := Starter + Batch_Size;
-
-           end loop;
-       end loop;
-
+               Start := Start + Batch_Size;
+            end loop;
+            Put_Line ("Epoch" & Epoch'Image & " mean loss =" &
+                      Float_32'Image (Epoch_Loss / Float_32 (N)));
+         end;
+      end loop;
    end Fit;
 
-    function Predict(M : in out Model; Data : Tensor) return CPU_Tensor is
-        X : Tensor := Data;
-    begin
-        for G of M.Graph loop
-            X.Data := new CPU_Tensor'(G.all.Forward(X));
-        end loop;
-        return X.Data.all;
-    end Predict;
+   function Predict (M : in out Model; Data : Tensor) return CPU_Tensor is
+      X : Tensor := Data;
+      Storage : Storage_Vector.Vector;
+   begin
+      for G of M.Graph loop
+         declare
+            Y : constant CPU_Tensor := G.all.Forward (X);
+         begin
+            X.Data := new CPU_Tensor'(Y);
+            Storage.Append (X.Data);
+         end;
+      end loop;
+      return Result : CPU_Tensor := X.Data.all do
+         Release (Storage);
+      end return;
+   exception
+      when others =>
+         Release (Storage);
+         raise;
+   end Predict;
 
-    function Calculate_Accuracy(Predicted : CPU_Tensor; TestTargets : Target_Array) return Float is
-        function ArgMax (Row : CPU_Tensor) return Natural is
-            Max_Index : Integer := 1;
-        begin
-            for I in 2 .. Row.Shape(1) loop
-                declare
-                    Row_Value : Float_32 := Row(I);
-                    Max_Value : Float_32 := Row(Max_Index);
-                begin
-                    if Row_Value > Max_Value then
-                        Max_Index := I;
-                    end if;
-                end;
+   function Calculate_Accuracy (Predicted : CPU_Tensor; TestTargets : Target_Array)
+     return Float
+   is
+      Correct : Natural := 0;
+   begin
+      if Predicted.Shape (1) /= TestTargets'Length then
+         raise Constraint_Error with "Prediction and target lengths differ";
+      end if;
+      for I in 1 .. Predicted.Shape (1) loop
+         declare
+            Best : Positive := 1;
+         begin
+            for J in 2 .. Predicted.Shape (2) loop
+               if Float_32'(Predicted.Get (ST.Tensor_Index'(I, J))) >
+                 Float_32'(Predicted.Get (ST.Tensor_Index'(I, Best)))
+               then
+                  Best := J;
+               end if;
             end loop;
-            return Max_Index;
-        end ArgMax;
-
-        Correct_Predictions : Natural := 0;
-        Accuracy : Float;
-    begin        
-        -- Calculate the number of correct predictions
-        for I in 1 .. Predicted.Shape(1) loop
-            if ArgMax (Predicted (I)) = TestTargets(I) then
-                Correct_Predictions := Correct_Predictions + 1;
+            if Best = TestTargets (TestTargets'First + I - 1) then
+               Correct := Correct + 1;
             end if;
-        end loop;
-
-        -- Calculate accuracy
-
-        
-        Accuracy := (Float(Correct_Predictions) / Float(TestTargets'Length));
-        return Accuracy;
-    end Calculate_Accuracy;
+         end;
+      end loop;
+      return Float (Correct) / Float (TestTargets'Length);
+   end Calculate_Accuracy;
 end Mlengine.Utilities;

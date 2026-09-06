@@ -2,7 +2,6 @@ with Mlengine;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Numerics; use Ada.Numerics;
 with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
-with Generate_Gaussian_Random;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with Mlengine.LossFunctions; use Mlengine.LossFunctions;
 with Orka.Numerics.Singles.Tensors.CPU; use Orka.Numerics.Singles.Tensors.CPU;
@@ -19,7 +18,7 @@ package body Mlengine.spiraldata is
    function Linspace
         (Start, Stop : Float; Num : Positive) return Float_Array
       is
-         Step   : Float := (Stop - Start) / Float (Num - 1);
+         Step   : Float := (if Num = 1 then 0.0 else (Stop - Start) / Float (Num - 1));
          Result : Float_Array (1 .. Num);
       begin
          for I in Result'Range loop
@@ -38,16 +37,25 @@ package body Mlengine.spiraldata is
 
       -- Calculate the angle between each class in radians
       Radians_Per_Class : constant Float := 2.0 * Pi / Float (Num_Classes);
+      Gen : Generator;
+      function Gaussian return Float is
+         U : constant Float := Float'Max (Random (Gen), Float'Model_Small);
+         V : constant Float := Random (Gen);
+      begin
+         return Sqrt (-2.0 * Log (U)) * Cos (2.0 * Pi * V);
+      end Gaussian;
 
    begin
+      -- Seed once per dataset, rather than reseeding for every point.
+      Reset (Gen, 42);
       -- Loop through each class to generate spiral data
       for I in 1 .. Num_Classes loop
          -- Generate angles for each point in the spiral with some randomness
          declare
-            T : Float_Array := Linspace((Float(I)*Radians_Per_Class), ((Float(I) + 1.5)*Radians_Per_Class), Points_Per_Class);
+            T : Float_Array := Linspace((Float(I - 1)*Radians_Per_Class), ((Float(I - 1) + 1.5)*Radians_Per_Class), Points_Per_Class);
          begin
             for J in 1 .. Points_Per_Class loop
-               T(J) :=  T(J) + (Generate_Gaussian_Random * Small_Constant);
+               T(J) := T(J) + Gaussian * Small_Constant;
             end loop;
 
             -- Generate the coordinates for each point in the spiral using polar coordinates
@@ -63,7 +71,7 @@ package body Mlengine.spiraldata is
 
             -- Set target values for each class
             for J in 1 .. Points_Per_Class loop
-               Target_Return(J + (I-1)* Points_Per_Class) := (I); -- needs to be an array of integers as defined in loss
+               Target_Return(Target_Return'First + J - 1 + (I-1)* Points_Per_Class) := I;
             end loop;
          end;
       end loop;
