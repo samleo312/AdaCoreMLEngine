@@ -10,9 +10,7 @@ package body Mlengine.Optimizers is
 
         if not Optim.Parameters.all.Is_Empty then
             for I in Optim.Parameters.all.First_Index .. Optim.Parameters.all.Last_Index loop
-               Velocity.Data := new ST_CPU.CPU_Tensor'
-                  (Zeros ((Optim.Parameters.all (I).all.Grad.Shape (1), Optim.Parameters.all (I).all.Grad.Shape (2))));
-               Velocity.Grad := null;
+               Velocity := Create_Tensor (Optim.Parameters.all (I).all.Grad.Shape, With_Grad => False);
                Optim.Velocities.Append (Velocity);
             end loop;
         end if;
@@ -21,9 +19,6 @@ package body Mlengine.Optimizers is
 
     procedure FreeSGD (Optim : in out SGD) is
     begin
-        for I of Optim.Velocities loop
-            Free_Tensor (I);
-        end loop;
         Optim.Velocities.Clear;
     end FreeSGD;
 

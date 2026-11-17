@@ -59,12 +59,7 @@ package body Mlengine.LossFunctions is
 
       end loop;
 
-      declare
-         Saved : constant CPU_Tensor_Access := new CPU_Tensor'(Probabilities);
-      begin
-         Free_CPU_Tensor (SLM.Proba.Data);
-         SLM.Proba.Data := Saved;
-      end;
+      Set_Data (SLM.Proba, Probabilities);
 
       return Loss / Float_32 (SLM.Size);
    end Forward;

@@ -24,6 +24,8 @@ package Mlengine.Operators is
 
    
    
+   function Create_Linear (Inputs, Outputs : Positive) return Linear_T;
+
    overriding function Forward (E : in out Linear_T; X : in out Tensor) return ST_CPU.CPU_Tensor;
    overriding function Backward (E : in out Linear_T; dY : in out Tensor) return ST_CPU.CPU_Tensor;
    overriding function Get_Params (E : in out Linear_T) return ParamsArray;

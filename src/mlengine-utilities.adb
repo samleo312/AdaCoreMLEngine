@@ -2,17 +2,6 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Numerics.Discrete_Random;
 
 package body Mlengine.Utilities is
-   package Storage_Vector is new Ada.Containers.Vectors
-     (Index_Type => Natural, Element_Type => CPU_Tensor_Access);
-
-   procedure Release (Storage : in out Storage_Vector.Vector) is
-   begin
-      for P of Storage loop
-         Free_CPU_Tensor (P);
-      end loop;
-      Storage.Clear;
-   end Release;
-
    procedure Add (M : in out Model; Layer : Mlengine.Operators.Func_Access_T) is
       Params : constant ParamsArray := Layer.Get_Params;
    begin
@@ -69,13 +58,11 @@ package body Mlengine.Utilities is
             while Start <= N loop
                declare
                   Count : constant Positive := Integer'Min (Batch_Size, N - Start + 1);
-                  Batch : Tensor :=
-                    (Data => new CPU_Tensor'(Zeros ((Count, Data.Data.Shape (2)))),
-                     Grad => null);
+                  Batch : Tensor := Create_Tensor
+                    (ST.Tensor_Shape'(Count, Data.Data.Shape (2)), With_Grad => False);
                   Labels : Target_Array (1 .. Count);
                   Local_Loss : SoftLossMax_T (Count);
-                  Storage : Storage_Vector.Vector;
-                  X : Tensor := Batch;
+                  X : Tensor;
                   Grad : Tensor;
                   Loss : Float_32;
                begin
@@ -90,43 +77,32 @@ package body Mlengine.Utilities is
                         end;
                      end loop;
                   end loop;
+                  X := Batch;
                   Optimizer.Zero_Grad;
                   for G of M.Graph loop
                      declare
                         Y : constant CPU_Tensor := G.all.Forward (X);
                      begin
-                        X.Data := new CPU_Tensor'(Y);
-                        Storage.Append (X.Data);
+                        Set_Data (X, Y);
                      end;
                   end loop;
                   -- The final partial batch has its own correctly sized loss.
                   if Count = Loss_Fn.Size then
                      Loss := Loss_Fn.Forward (X.Data.all, Labels);
-                     Grad.Data := new CPU_Tensor'(Loss_Fn.Backward);
+                     Set_Data (Grad, Loss_Fn.Backward);
                   else
                      Loss := Local_Loss.Forward (X.Data.all, Labels);
-                     Grad.Data := new CPU_Tensor'(Local_Loss.Backward);
+                     Set_Data (Grad, Local_Loss.Backward);
                   end if;
-                  Storage.Append (Grad.Data);
                   for G of reverse M.Graph loop
                      declare
                         D : constant CPU_Tensor := G.all.Backward (Grad);
                      begin
-                        Grad.Data := new CPU_Tensor'(D);
-                        Storage.Append (Grad.Data);
+                        Set_Data (Grad, D);
                      end;
                   end loop;
                   Optimizer.Step;
                   Epoch_Loss := Epoch_Loss + Float_32 (Count) * Loss;
-                  Release (Storage);
-                  Free_Tensor (Batch);
-                  Free_Tensor (Local_Loss.Proba);
-               exception
-                  when others =>
-                     Release (Storage);
-                     Free_Tensor (Batch);
-                     Free_Tensor (Local_Loss.Proba);
-                     raise;
                end;
                Start := Start + Batch_Size;
             end loop;
@@ -138,23 +114,15 @@ package body Mlengine.Utilities is
 
    function Predict (M : in out Model; Data : Tensor) return CPU_Tensor is
       X : Tensor := Data;
-      Storage : Storage_Vector.Vector;
    begin
       for G of M.Graph loop
          declare
             Y : constant CPU_Tensor := G.all.Forward (X);
          begin
-            X.Data := new CPU_Tensor'(Y);
-            Storage.Append (X.Data);
+            Set_Data (X, Y);
          end;
       end loop;
-      return Result : CPU_Tensor := X.Data.all do
-         Release (Storage);
-      end return;
-   exception
-      when others =>
-         Release (Storage);
-         raise;
+      return X.Data.all;
    end Predict;
 
    function Calculate_Accuracy (Predicted : CPU_Tensor; TestTargets : Target_Array)

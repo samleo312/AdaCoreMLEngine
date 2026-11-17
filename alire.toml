@@ -13,3 +13,10 @@ orka_tensors_cpu = "~1.0.0"
 "*".style_checks = "No"
 [[depends-on]]
 aunit = "^23.0.0"
+
+# Use the sibling Orka checkout while the upstream URL is unavailable.
+[[pins]]
+orka_tensors_cpu = { path = "../orka/orka/orka_tensors_cpu" }
+orka_numerics = { path = "../orka/orka/orka_numerics" }
+orka_simd = { path = "../orka/orka/orka_simd" }
+orka_types = { path = "../orka/orka/orka_types" }

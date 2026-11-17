@@ -33,6 +33,14 @@ package body Mlengine.Operators is
       end SumOverX;
 
 
+   function Create_Linear (Inputs, Outputs : Positive) return Linear_T is
+   begin
+      return Result : Linear_T do
+         Result.Weights := Create_Tensor (ST.Tensor_Shape'(Inputs, Outputs));
+         Result.Bias := Create_Tensor (ST.Tensor_Shape'(1, Outputs));
+      end return;
+   end Create_Linear;
+
    procedure InitializeLayer(E : in out Linear_T) is
       use Ada.Numerics.Elementary_Functions;
    begin
@@ -91,12 +99,8 @@ package body Mlengine.Operators is
          --Put_Line("-----BIAS----");
          --Put_Line(E.Bias.Data.all.Image);
 
-          -- Own a snapshot for backward, independent of activation buffers.
-          if E.Input.Data /= null then
-             Mlengine.Free_CPU_Tensor (E.Input.Data);
-          end if;
-          E.Input.Data := new ST_CPU.CPU_Tensor'(X.Data.all);
-          E.Input.Grad := null;
+          -- Preserve a snapshot for backward; Tensor owns and replaces it.
+          Set_Data (E.Input, X.Data.all);
           return Multi;
       end;
 
@@ -147,12 +151,7 @@ package body Mlengine.Operators is
          end loop;
       end loop;
 
-      declare
-         Saved : constant CPU_Tensor_Access := new ST_CPU.CPU_Tensor'(Activated);
-      begin
-         Free_CPU_Tensor (E.Activated.Data);
-         E.Activated.Data := Saved;
-      end;
+      Set_Data (E.Activated, Activated);
       return Activated;
 
    end Forward;
